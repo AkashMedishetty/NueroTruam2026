@@ -52,11 +52,11 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
   // Content Security Policy
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.razorpay.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://*.googletagmanager.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com blob: data:",
+    "connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.googletagmanager.com blob: data:",
     "worker-src 'self' blob:",
     "child-src 'self' blob:",
     "frame-src 'self' https://api.razorpay.com https://*.razorpay.com",

@@ -11,7 +11,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar, FileText, Award, Users, CheckCircle, CreditCard, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Calendar, FileText, Award, Users, CheckCircle, CreditCard, Eye, EyeOff, Loader2, AlertCircle, CheckIcon } from "lucide-react"
 import Link from "next/link"
 import { Navigation } from "@/components/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -309,8 +310,11 @@ export default function RegisterPage() {
 
   const validateStep = (currentStep: number) => {
     console.log(`Validating step ${currentStep}...`)
+    console.log(`Current form data:`, JSON.stringify(formData, null, 2))
+    
     switch (currentStep) {
       case 1:
+        // Check all required fields for step 1
         const requiredFields = {
           title: formData.title,
           firstName: formData.firstName,
@@ -323,87 +327,167 @@ export default function RegisterPage() {
           institution: formData.institution
         }
         
+        console.log('Checking required fields:', requiredFields)
+        
         const missingFields = Object.entries(requiredFields).filter(([key, value]) => {
-          return !value || (typeof value === 'string' && value.trim() === '')
+          const isEmpty = !value || (typeof value === 'string' && value.trim() === '')
+          if (isEmpty) {
+            console.log(`Missing field: ${key} = "${value}"`)
+          }
+          return isEmpty
         })
         
         if (missingFields.length > 0) {
-          const missingFieldNames = missingFields.map(([key]) => key).join(', ')
+          const missingFieldNames = missingFields.map(([key]) => {
+            // Convert camelCase to readable format
+            return key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())
+          }).join(', ')
+          
+          console.log('Missing fields detected:', missingFieldNames)
+          
           toast({
             title: "Missing Required Fields",
-            description: `Please fill in: ${missingFieldNames}`,
-            variant: "destructive"
+            description: `Please fill in the following fields: ${missingFieldNames}`,
+            variant: "destructive",
+            duration: 5000 // Show for 5 seconds
           })
+          
+          // Scroll to the first missing field
+          const fieldElement = document.querySelector(`[name="${missingFields[0][0]}"], #${missingFields[0][0]}`)
+          if (fieldElement) {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+          
           return false
         }
-        if (formData.password.length < 8) {
+        // Password validation
+        if (!formData.password || formData.password.length < 8) {
+          console.log('Password validation failed:', formData.password?.length || 0)
           toast({
-            title: "Password Too Short",
+            title: "Password Requirements",
             description: "Password must be at least 8 characters long.",
-            variant: "destructive"
+            variant: "destructive",
+            duration: 5000
           })
+          document.querySelector('input[type="password"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           return false
         }
+        
+        // Confirm password validation
+        if (formData.password !== formData.confirmPassword) {
+          console.log('Password confirmation failed')
+          toast({
+            title: "Passwords Don't Match",
+            description: "Please ensure both password fields contain the same value.",
+            variant: "destructive",
+            duration: 5000
+          })
+          document.querySelector('input[placeholder*="Confirm"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return false
+        }
+        
+        // Email availability validation
         if (emailAvailable === false) {
+          console.log('Email already registered')
           toast({
             title: "Email Already Registered",
-            description: "Please use a different email address or sign in with your existing account.",
-            variant: "destructive"
+            description: "This email is already registered. Please use a different email or sign in with your existing account.",
+            variant: "destructive",
+            duration: 7000
           })
+          document.querySelector('input[type="email"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           return false
         }
+        
+        // Check if email verification is still pending
         if (emailAvailable === null && formData.email.includes('@') && formData.email.includes('.')) {
-          // Only show this if email looks valid and we haven't checked it yet
-          // Give it a few seconds to check automatically
+          console.log('Email verification still pending')
+          // Trigger email check again
           setTimeout(() => checkEmailUniqueness(formData.email), 100)
           toast({
             title: "Email Verification Pending",
-            description: "Please wait a moment for email verification to complete.",
-            variant: "destructive"
+            description: "Please wait a moment while we verify your email address is available.",
+            variant: "destructive",
+            duration: 5000
           })
           return false
         }
-        if (formData.password !== formData.confirmPassword) {
-          toast({
-            title: "Passwords Don't Match",
-            description: "Please ensure both passwords match.",
-            variant: "destructive"
-          })
-          return false
-        }
-        console.log('Step 1 validation passed!')
+        
+        console.log('✅ Step 1 validation passed successfully!')
         return true
       case 2:
-        console.log('Step 2 validation - checking address fields...')
-        if (!formData.address || !formData.city || !formData.state || !formData.pincode) {
+        console.log('Step 2 validation - checking registration details...')
+        console.log('Step 2 form data:', {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+          registrationType: formData.registrationType
+        })
+        
+        // Check address fields
+        const addressFields = {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode
+        }
+        
+        const missingAddressFields = Object.entries(addressFields).filter(([key, value]) => {
+          return !value || (typeof value === 'string' && value.trim() === '')
+        })
+        
+        if (missingAddressFields.length > 0) {
+          const missingNames = missingAddressFields.map(([key]) => 
+            key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())
+          ).join(', ')
+          
+          console.log('Missing address fields:', missingNames)
           toast({
-            title: "Missing Address Information",
-            description: "Please fill in all address fields.",
-            variant: "destructive"
+            title: "Missing Address Information", 
+            description: `Please fill in the following address fields: ${missingNames}`,
+            variant: "destructive",
+            duration: 5000
           })
           return false
         }
+        
+        // Check registration type
         if (!formData.registrationType) {
+          console.log('Missing registration type')
           toast({
-            title: "Missing Registration Type",
-            description: "Please select a registration type.",
-            variant: "destructive"
+            title: "Registration Type Required",
+            description: "Please select your registration type (NTSI Member, Non Member, or PG Student).",
+            variant: "destructive",
+            duration: 5000
           })
+          document.querySelector('input[name="registrationType"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           return false
         }
-        console.log('Step 2 validation passed!')
+        
+        console.log('✅ Step 2 validation passed!')
         return true
+        
       case 3:
-        console.log('Step 3 validation - checking terms agreement...')
+        console.log('Step 3 validation - checking payment and terms...')
+        console.log('Step 3 form data:', {
+          agreeTerms: formData.agreeTerms,
+          paymentMethod: formData.paymentMethod
+        })
+        
         if (!formData.agreeTerms) {
+          console.log('Terms not agreed')
           toast({
-            title: "Terms and Conditions",
-            description: "Please agree to the terms and conditions.",
-            variant: "destructive"
+            title: "Terms and Conditions Required",
+            description: "Please read and agree to the terms and conditions before proceeding.",
+            variant: "destructive",
+            duration: 6000
           })
+          document.querySelector('#terms')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           return false
         }
-        console.log('Step 3 validation passed!')
+        
+        console.log('✅ Step 3 validation passed!')
         return true
       default:
         console.log(`Default validation for step ${currentStep}`)
@@ -414,13 +498,29 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('Form submitted! Current step:', step)
-    console.log('Form data:', formData)
+    console.log('🔄 Form submitted! Current step:', step)
+    console.log('📋 Complete form data:', JSON.stringify(formData, null, 2))
     
     if (step < 3) {
-      console.log('Moving to next step...')
-      if (validateStep(step)) {
+      console.log('➡️ Attempting to move to next step...')
+      console.log('📊 Email availability status:', emailAvailable)
+      
+      const isValid = validateStep(step)
+      console.log(`✅ Step ${step} validation result:`, isValid)
+      
+      if (isValid) {
+        console.log(`🎉 Moving from step ${step} to step ${step + 1}`)
         setStep(step + 1)
+        
+        // Show success toast for step completion
+        toast({
+          title: "Step Completed",
+          description: `Step ${step} completed successfully. Moving to step ${step + 1}.`,
+          variant: "default",
+          duration: 2000
+        })
+      } else {
+        console.log(`❌ Step ${step} validation failed - staying on current step`)
       }
       return
     }
@@ -566,6 +666,45 @@ export default function RegisterPage() {
     }
     return `₹${amount.toLocaleString()}`
   }
+  
+  // Validation helper component
+  const ValidationSummary = ({ currentStep }: { currentStep: number }) => {
+    let missingFields: string[] = []
+    
+    if (currentStep === 1) {
+      const requiredFields = {
+        title: formData.title,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        designation: formData.designation,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        institution: formData.institution
+      }
+      
+      missingFields = Object.entries(requiredFields)
+        .filter(([key, value]) => !value || (typeof value === 'string' && value.trim() === ''))
+        .map(([key]) => key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase()))
+    }
+    
+    if (missingFields.length === 0) return null
+    
+    return (
+      <Alert className="mb-4 border-orange-200 bg-orange-50">
+        <AlertCircle className="h-4 w-4 text-orange-600" />
+        <AlertDescription className="text-orange-800">
+          <strong>Please complete the following required fields:</strong>
+          <ul className="mt-2 list-disc list-inside space-y-1">
+            {missingFields.map(field => (
+              <li key={field} className="text-sm">{field}</li>
+            ))}
+          </ul>
+        </AlertDescription>
+      </Alert>
+    )
+  }
 
   const renderStepContent = () => {
     switch (step) {
@@ -601,6 +740,7 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
                   placeholder="Enter your first name"
+                  className={!formData.firstName ? "border-red-200 focus:border-red-400" : "border-green-200 focus:border-green-400"}
                   required
                 />
               </div>
@@ -756,6 +896,10 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
+            
+            {/* Validation Summary */}
+            <ValidationSummary currentStep={1} />
+            
             <div className="flex justify-end">
               <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
                 Next Step
