@@ -56,10 +56,19 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           variant: "destructive"
         })
       } else {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back! Redirecting to your dashboard...",
-        })
+        // In handleSubmit, after successful signIn:
+        } else {
+          toast({
+            title: "Login Successful",
+            description: "Welcome back! Redirecting to your dashboard...",
+          });
+          // Refresh router data to ensure session is loaded
+          router.refresh();
+          // Increased delay for session propagation
+          setTimeout(() => {
+            router.push(callbackUrl);
+          }, 500);
+        }
         // Use redirect guard to prevent loops
         if (redirectGuard.canRedirect(callbackUrl, 'LoginForm-success')) {
           // Clear any existing redirect history on successful login

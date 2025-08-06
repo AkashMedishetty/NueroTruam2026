@@ -152,6 +152,11 @@ const nextConfig = {
         source: '/auth/register',
         destination: '/register',
         permanent: true
+      },
+      {
+        source: '/favicon.ico',
+        destination: '/Favicons/favicon.ico',
+        permanent: true
       }
     ]
   },
