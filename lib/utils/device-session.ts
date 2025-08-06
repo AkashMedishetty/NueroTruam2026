@@ -56,19 +56,20 @@ export function validateDeviceSession(
   sessionLoginTime: number
 ): boolean {
   try {
-    // Check if session is too old (older than 24 hours)
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+    // Check if session is too old (older than 7 days - much more lenient)
+    const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
     if (Date.now() - sessionLoginTime > maxAge) {
-      console.log('Session expired due to age')
+      console.log('Session expired due to age (7+ days)')
       return false
     }
 
-    // For now, we'll use the deviceId as a unique identifier
-    // In a more sophisticated setup, you could decode and compare fingerprints
+    // Allow all valid device IDs - don't restrict based on fingerprint
+    // This allows the same user to be logged in on multiple devices
     return !!sessionDeviceId && sessionDeviceId.length > 10
   } catch (error) {
     console.error('Device session validation error:', error)
-    return false
+    // On error, allow the session to continue
+    return true
   }
 }
 

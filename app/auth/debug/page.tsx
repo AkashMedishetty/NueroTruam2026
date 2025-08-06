@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { testMultiDeviceAuth, clearAllAuthData, getCurrentDeviceSession } from "@/lib/utils/multi-device-test"
 
 export default function AuthDebugPage() {
   const { data: session, status } = useSession()
@@ -73,6 +74,24 @@ export default function AuthDebugPage() {
                 <p>No cookies found</p>
               )}
             </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Multi-Device Testing</h3>
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={testMultiDeviceAuth}>
+                Test Multi-Device Auth
+              </Button>
+              <Button variant="outline" onClick={clearAllAuthData}>
+                Clear All Auth Data
+              </Button>
+              <Button variant="outline" onClick={() => console.log(getCurrentDeviceSession())}>
+                Log Device Session
+              </Button>
+            </div>
+            <p className="text-xs text-gray-600 mt-2">
+              Check browser console for detailed output
+            </p>
           </div>
 
           <div className="flex gap-2">

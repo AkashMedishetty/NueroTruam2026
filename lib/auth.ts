@@ -121,9 +121,12 @@ export const authOptions: NextAuthOptions = {
                 token.registrationId = user.registrationId
                 token.registrationStatus = user.registrationStatus
                 
-                // Add device/session identifier to prevent cross-device session sharing
-                token.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-                token.loginTime = Date.now()
+                // Only set deviceId and loginTime on initial login (when user object exists)
+                // This prevents overwriting existing device sessions
+                if (!token.deviceId) {
+                    token.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+                    token.loginTime = Date.now()
+                }
             }
             return token
         },
@@ -141,7 +144,7 @@ export const authOptions: NextAuthOptions = {
             return session
         },
         async signIn({ user, account, profile, email, credentials }) {
-            // Always allow sign in, but each device gets a unique session
+            // Allow multiple concurrent sessions for the same user on different devices
             return true
         }
     },
