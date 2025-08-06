@@ -37,32 +37,6 @@ const nextConfig = {
       // Optimize bundle size
       config.optimization = {
         ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            // Separate vendor chunk for better caching
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              priority: 10,
-              chunks: 'all',
-            },
-            // Separate Three.js chunk as it's heavy
-            three: {
-              test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
-              name: 'three',
-              priority: 20,
-              chunks: 'all',
-            },
-            // Separate UI components chunk
-            ui: {
-              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion)[\\/]/,
-              name: 'ui',
-              priority: 15,
-              chunks: 'all',
-            },
-          },
-        },
       }
     }
 
@@ -207,34 +181,6 @@ const nextConfig = {
             analyzerPort: 8888
           })
         )
-      }
-    }
-
-    // Optimize for production
-    if (!dev && !isServer) {
-      // Split chunks for better caching
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          // Vendor chunk
-          vendor: {
-            name: 'vendor',
-            chunks: 'all',
-            test: /node_modules/,
-            priority: 20
-          },
-          // Common chunk
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true,
-            enforce: true
-          }
-        }
       }
     }
 
