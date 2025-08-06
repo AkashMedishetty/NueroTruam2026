@@ -1,12 +1,19 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
+import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import { getAuthUrl } from '@/lib/auth-config'
 import { logSessionLogin, logSessionError } from '@/lib/utils/session-monitor'
 
+// MongoDB client for NextAuth adapter
+const client = new MongoClient(process.env.MONGODB_URI!)
+const clientPromise = client.connect()
+
 export const authOptions: NextAuthOptions = {
+    adapter: MongoDBAdapter(clientPromise),
     providers: [
         CredentialsProvider({
             id: 'credentials',
@@ -87,42 +94,15 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     session: {
-        strategy: 'jwt' as const,
+        strategy: 'database' as const,
         maxAge: 30 * 24 * 60 * 60, // 30 days
         updateAge: 24 * 60 * 60, // 24 hours
-    },
-    jwt: {
-        maxAge: 30 * 24 * 60 * 60, // 30 days (match session maxAge)
-        // Add error handling for JWT operations
-        encode: async ({ secret, token, maxAge }) => {
-            try {
-                const { encode } = await import('next-auth/jwt')
-                return await encode({ secret, token, maxAge })
-            } catch (error) {
-                console.error('🚨 JWT Encode Error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    tokenKeys: token ? Object.keys(token) : [],
-                    timestamp: new Date().toISOString()
-                })
-                throw error
-            }
-        },
-        decode: async ({ secret, token }) => {
-            try {
-                const { decode } = await import('next-auth/jwt')
-                return await decode({ secret, token })
-            } catch (error) {
-                console.error('🚨 JWT Decode Error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    tokenLength: token?.length || 0,
-                    tokenPreview: token?.substring(0, 50) + '...',
-                    timestamp: new Date().toISOString()
-                })
-                // Return null instead of throwing to prevent cascading errors
-                return null
-            }
+        generateSessionToken: () => {
+            // Generate unique session tokens to prevent conflicts
+            return `${Date.now()}_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`
         }
     },
+
     cookies: {
         sessionToken: {
             name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
@@ -131,8 +111,10 @@ export const authOptions: NextAuthOptions = {
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                // Don't set domain for Vercel - let it default to the current domain
-                domain: undefined
+                // CRITICAL FIX: Don't set domain to prevent cross-device session sharing
+                domain: undefined,
+                // Add session isolation with unique identifiers
+                maxAge: 30 * 24 * 60 * 60 // 30 days
             }
         },
         callbackUrl: {
@@ -157,95 +139,63 @@ export const authOptions: NextAuthOptions = {
         }
     },
     callbacks: {
-        async jwt({ token, user, account, trigger }) {
+        async session({ session, user }) {
             try {
-                if (user) {
-                    token.role = user.role
-                    token.registrationId = user.registrationId
-                    token.registrationStatus = user.registrationStatus
+                if (user && session.user) {
+                    // Get user data from database for accurate information
+                    await connectDB()
+                    const dbUser = await User.findById(user.id)
                     
-                    // Create a unique session identifier for this login
-                    // Include timestamp and random component for uniqueness
-                    const sessionId = `${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
-                    token.sessionId = sessionId
-                    token.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-                    token.loginTime = Date.now()
-                    
-                    console.log('🔐 New JWT token created:', {
-                        userId: user.id,
-                        email: user.email,
-                        sessionId,
-                        deviceId: token.deviceId,
-                        timestamp: new Date().toISOString()
-                    })
-
-                    // Update session monitor with actual session details
-                    logSessionLogin(user.id, sessionId, token.deviceId)
-                }
-                
-                // Add token validation - but don't return null as it breaks the type
-                if (token.exp && typeof token.exp === 'number' && Date.now() / 1000 > token.exp) {
-                    console.warn('⚠️ Token expired in JWT callback:', {
-                        exp: token.exp,
-                        now: Math.floor(Date.now() / 1000),
-                        sessionId: token.sessionId
-                    })
-                    // Instead of returning null, create a minimal token that will be rejected elsewhere
-                    return {
-                        ...token,
-                        expired: true,
-                        exp: 0 // Set expiry to 0 to ensure it's treated as expired
+                    if (dbUser) {
+                        session.user.id = user.id
+                        session.user.role = dbUser.role
+                        session.user.registrationId = dbUser.registration.registrationId
+                        session.user.registrationStatus = dbUser.registration.status
+                        
+                        // Add unique session identifiers for isolation
+                        session.sessionId = `db_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+                        session.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+                        session.loginTime = Date.now()
+                        session.lastValidated = Date.now()
+                        
+                        console.log('🔐 Database session created:', {
+                            userId: user.id,
+                            email: session.user.email,
+                            role: dbUser.role,
+                            sessionId: session.sessionId,
+                            timestamp: new Date().toISOString()
+                        })
+                        
+                        // Log session creation
+                        logSessionLogin(user.id, session.sessionId, session.deviceId)
                     }
-                }
-                
-                return token
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-                console.error('🚨 JWT Callback Error:', {
-                    error: errorMessage,
-                    trigger,
-                    hasUser: !!user,
-                    tokenKeys: token ? Object.keys(token) : [],
-                    timestamp: new Date().toISOString()
-                })
-
-                // Log JWT callback error
-                logSessionError(`JWT callback error: ${errorMessage}`, token?.sub, token?.sessionId as string)
-                // Return the token as-is to prevent breaking the session
-                return token
-            }
-        },
-        async session({ session, token }) {
-            try {
-                if (token) {
-                    session.user.id = token.sub!
-                    session.user.role = token.role as string
-                    session.user.registrationId = token.registrationId as string
-                    session.user.registrationStatus = token.registrationStatus as string
-                    
-                    // Add session isolation identifiers
-                    session.sessionId = token.sessionId as string
-                    session.deviceId = token.deviceId as string
-                    session.loginTime = token.loginTime as number
-                    
-                    // Add session validation timestamp
-                    session.lastValidated = Date.now()
                 }
                 return session
             } catch (error) {
-                console.error('🚨 Session Callback Error:', {
+                console.error('🚨 Database Session Callback Error:', {
                     error: error instanceof Error ? error.message : 'Unknown error',
-                    hasToken: !!token,
-                    tokenKeys: token ? Object.keys(token) : [],
+                    userId: user?.id,
                     timestamp: new Date().toISOString()
                 })
-                // Return session as-is to prevent breaking
                 return session
             }
         },
         async signIn({ user, account, profile, email, credentials }) {
-            // Allow multiple concurrent sessions for the same user on different devices
-            return true
+            try {
+                // For credentials provider, user is already validated
+                if (account?.provider === 'credentials') {
+                    console.log('✅ Database session sign-in successful:', {
+                        userId: user.id,
+                        email: user.email,
+                        timestamp: new Date().toISOString()
+                    })
+                    return true
+                }
+                return true
+            } catch (error) {
+                console.error('🚨 Sign-in callback error:', error)
+                return false
+            }
         }
     },
     pages: {
