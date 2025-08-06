@@ -3,7 +3,6 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
-import { logSessionLogin } from '@/lib/utils/session-monitor-clean'
 
 /**
  * Clean, Scalable JWT Authentication Configuration
@@ -138,9 +137,6 @@ export const authOptions: NextAuthOptions = {
                         deviceId: token.deviceId
                     })
                 }
-
-                // Log session creation
-                logSessionLogin(user.id, token.sessionId, token.deviceId)
             }
             
             return token

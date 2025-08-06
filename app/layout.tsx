@@ -1,6 +1,5 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Orbitron } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SessionProvider } from "@/components/providers/SessionProvider"
 import { Toaster } from "@/components/ui/sonner"
@@ -11,20 +10,6 @@ import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate"
 import { DeviceSessionManager } from "@/components/auth/DeviceSessionManager"
 import { RedirectLoopHandler } from "@/components/auth/RedirectLoopHandler"
 import "./globals.css"
-
-const inter = Inter({ 
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-  fallback: ['system-ui', 'arial']
-})
-const orbitron = Orbitron({ 
-  subsets: ["latin"], 
-  variable: "--font-orbitron",
-  display: 'swap',
-  preload: true,
-  fallback: ['system-ui', 'arial']
-})
 
 export const metadata: Metadata = {
   title: {
@@ -158,7 +143,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Structured Data for SEO */}
         <script
@@ -292,7 +277,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className="antialiased font-sans">
         <GlobalErrorBoundary>
                     <SessionProvider>
             <DeviceSessionManager>

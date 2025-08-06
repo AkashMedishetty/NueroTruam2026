@@ -25,3 +25,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Legacy auth utilities (replaced with clean versions)
+lib/utils/auth-debug.ts
+lib/utils/auth-recovery.ts
+lib/utils/device-session.ts
+lib/utils/multi-device-test.ts
+lib/utils/session-monitor.ts
+lib/utils/session-validator.ts
+lib/auth-backup.ts
+middleware-backup.ts
+
