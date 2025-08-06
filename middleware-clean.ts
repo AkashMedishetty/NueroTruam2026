@@ -57,11 +57,6 @@ export async function middleware(request: NextRequest) {
   if (isProtectedPath) {
     const sessionCookie = getSessionCookie(request)
     
-    // Simple debugging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 Middleware: ${request.nextUrl.pathname} - Session: ${!!sessionCookie}`)
-    }
-    
     if (!sessionCookie) {
       // Simple redirect to login - no complex loop detection
       const loginUrl = new URL('/auth/login', request.url)
