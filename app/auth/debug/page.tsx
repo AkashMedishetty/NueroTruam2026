@@ -94,7 +94,7 @@ export default function AuthDebugPage() {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={refreshSession}>
               Refresh Session
             </Button>
@@ -109,6 +109,33 @@ export default function AuthDebugPage() {
               onClick={() => window.location.href = '/dashboard'}
             >
               Go to Dashboard
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/debug/session')
+                  const data = await response.json()
+                  console.log('🔍 Server Session Debug:', data)
+                  alert('Check console for server session debug info')
+                } catch (error) {
+                  console.error('Debug fetch error:', error)
+                }
+              }}
+            >
+              Debug Server Session
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).testMultiDeviceAuth) {
+                  (window as any).testMultiDeviceAuth()
+                } else {
+                  alert('Multi-device test not available')
+                }
+              }}
+            >
+              Test Multi-Device
             </Button>
           </div>
         </CardContent>
