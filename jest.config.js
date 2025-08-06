@@ -58,6 +58,11 @@ const customJestConfig = {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
   
+  // Transform ignore patterns for ES modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(bson|mongodb|mongoose)/)'
+  ],
+  
   // Test timeout
   testTimeout: 10000,
   

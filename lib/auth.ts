@@ -31,35 +31,42 @@ export const authOptions: NextAuthOptions = {
                     })
 
                     if (!user) {
-                        console.log('Authentication failed: User not found or inactive', {
-                            email: credentials.email.toLowerCase(),
-                            timestamp: new Date().toISOString()
-                        })
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Authentication failed: User not found or inactive', {
+                                email: credentials.email.toLowerCase(),
+                                timestamp: new Date().toISOString()
+                            })
+                        }
                         return null
                     }
 
                     const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
                     if (!isPasswordValid) {
-                        console.log('Authentication failed: Invalid password', {
-                            email: credentials.email.toLowerCase(),
-                            timestamp: new Date().toISOString()
-                        })
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Authentication failed: Invalid password', {
+                                email: credentials.email.toLowerCase(),
+                                timestamp: new Date().toISOString()
+                            })
+                        }
                         return null
                     }
 
-                    console.log('Authentication successful', {
-                        email: user.email,
-                        role: user.role,
-                        registrationId: user.registration.registrationId,
-                        timestamp: new Date().toISOString()
-                    })
+                    // Minimal logging for successful authentication
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('Authentication successful', {
+                            email: user.email,
+                            role: user.role,
+                            registrationId: user.registration.registrationId,
+                            timestamp: new Date().toISOString()
+                        })
+                    }
 
-                    // Log successful authentication for monitoring
+                    // Simplified session tracking
                     logSessionLogin(
                         user._id.toString(),
-                        `temp_${Date.now()}`, // Temporary session ID, will be replaced in JWT callback
-                        'unknown' // Device ID will be set in JWT callback
+                        `temp_${Date.now()}`,
+                        'unknown'
                     )
 
                     return {
@@ -89,8 +96,8 @@ export const authOptions: NextAuthOptions = {
     ],
     session: {
         strategy: 'jwt' as const,
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-        updateAge: 24 * 60 * 60, // 24 hours
+        maxAge: 24 * 60 * 60, // 24 hours (reduced from 30 days for better security)
+        updateAge: 4 * 60 * 60, // 4 hours (reduced for more frequent updates)
     },
 
     cookies: {
@@ -101,12 +108,8 @@ export const authOptions: NextAuthOptions = {
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                // CRITICAL FIX: Don't set domain to prevent cross-device session sharing
-                domain: undefined,
-                // Enhanced session isolation with shorter max age to prevent conflicts
-                maxAge: 7 * 24 * 60 * 60, // 7 days (reduced from 30 to prevent long-lived conflicts)
-                // Add priority to ensure correct cookie is used
-                priority: 'high'
+                domain: undefined, // Prevent cross-domain sharing
+                maxAge: 24 * 60 * 60, // 24 hours
             }
         },
         callbackUrl: {
@@ -117,7 +120,7 @@ export const authOptions: NextAuthOptions = {
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
                 domain: undefined,
-                maxAge: 60 * 60 // 1 hour for callback URLs
+                maxAge: 30 * 60 // 30 minutes for callback URLs
             }
         },
         csrfToken: {
@@ -128,12 +131,12 @@ export const authOptions: NextAuthOptions = {
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
                 domain: undefined,
-                maxAge: 60 * 60 // 1 hour for CSRF tokens
+                maxAge: 30 * 60 // 30 minutes for CSRF tokens
             }
         }
     },
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             try {
                 if (user) {
                     // Store user data in JWT token (required for CredentialsProvider)
@@ -142,71 +145,50 @@ export const authOptions: NextAuthOptions = {
                     token.registrationId = user.registrationId
                     token.registrationStatus = user.registrationStatus
                     
-                    // Add unique session identifiers for device isolation (as per MULTI_USER_AUTH_SOLUTION.md)
+                    // Simplified device/session identification for scaling
                     const timestamp = Date.now()
-                    const randomPart1 = Math.random().toString(36).substring(2, 15)
-                    const randomPart2 = Math.random().toString(36).substring(2, 15)
-                    const userPart = user.id.substring(0, 8)
+                    const randomId = Math.random().toString(36).substring(2, 15)
                     
-                    const sessionId = `jwt_${userPart}_${timestamp}_${randomPart1}_${randomPart2}`
-                    token.sessionId = sessionId
-                    token.deviceId = `dev_${timestamp}_${randomPart1}`
+                    token.sessionId = `jwt_${user.id.substring(0, 8)}_${timestamp}_${randomId}`
+                    token.deviceId = `dev_${timestamp}_${randomId}`
                     token.loginTime = timestamp
                     
-                    console.log('🔐 JWT session created with device isolation:', {
-                        userId: user.id,
-                        email: user.email,
-                        sessionId,
-                        deviceId: token.deviceId,
-                        timestamp: new Date().toISOString()
-                    })
+                    // Minimal logging for production performance
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('JWT session created:', {
+                            userId: user.id,
+                            sessionId: token.sessionId,
+                            timestamp: new Date().toISOString()
+                        })
+                    }
                     
-                    // Log session creation
-                    logSessionLogin(user.id, sessionId, token.deviceId)
+                    // Simplified session logging
+                    logSessionLogin(user.id, token.sessionId, token.deviceId)
                 }
                 return token
             } catch (error) {
-                console.error('🚨 JWT Callback Error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    hasUser: !!user,
-                    timestamp: new Date().toISOString()
-                })
+                console.error('JWT Callback Error:', error instanceof Error ? error.message : 'Unknown error')
                 return token
             }
         },
         async session({ session, token }) {
             try {
                 if (token) {
-                    // Transfer data from JWT token to session (as per MULTI_USER_AUTH_SOLUTION.md)
+                    // Transfer data from JWT token to session
                     session.user.id = token.id as string
                     session.user.role = token.role as string
                     session.user.registrationId = token.registrationId as string
                     session.user.registrationStatus = token.registrationStatus as string
                     
-                    // Add device isolation identifiers
+                    // Add session identifiers
                     session.sessionId = token.sessionId as string
                     session.deviceId = token.deviceId as string
                     session.loginTime = token.loginTime as number
                     session.lastValidated = Date.now()
-                    
-                    // Reduce logging frequency in production to prevent spam
-                    if (process.env.NODE_ENV === 'development' || Math.random() < 0.1) {
-                        console.log('🔐 Session from JWT with device isolation:', {
-                            userId: session.user.id,
-                            email: session.user.email,
-                            sessionId: session.sessionId,
-                            deviceId: session.deviceId,
-                            timestamp: new Date().toISOString()
-                        })
-                    }
                 }
                 return session
             } catch (error) {
-                console.error('🚨 Session Callback Error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    hasToken: !!token,
-                    timestamp: new Date().toISOString()
-                })
+                console.error('Session Callback Error:', error instanceof Error ? error.message : 'Unknown error')
                 return session
             }
         },
@@ -214,17 +196,18 @@ export const authOptions: NextAuthOptions = {
             try {
                 // For credentials provider, user is already validated
                 if (account?.provider === 'credentials') {
-                    console.log('✅ JWT session sign-in successful (with device isolation):', {
-                        userId: user.id,
-                        email: user.email,
-                        provider: account.provider,
-                        timestamp: new Date().toISOString()
-                    })
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('JWT sign-in successful:', {
+                            userId: user.id,
+                            email: user.email,
+                            timestamp: new Date().toISOString()
+                        })
+                    }
                     return true
                 }
                 return true
             } catch (error) {
-                console.error('🚨 Sign-in callback error:', error)
+                console.error('Sign-in callback error:', error)
                 return false
             }
         }
