@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/mongodb'
 import Configuration from '@/lib/models/Configuration'
 import Workshop from '@/lib/models/Workshop'
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate workshop fees
     let workshopFees = 0
-    const selectedWorkshopDetails: Array<{ name: string; amount: number }> = []
+    const selectedWorkshopDetails: Array<{ name: string; amount: number; id?: string }> = []
 
     workshopSelections.forEach(workshopIdentifier => {
       // Try to find workshop by id, name, or _id
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       type: 'pricing',
       key: 'accompanying_person',
       isActive: true
-    }).lean()
+    })
     
     if (accompanyingPersonConfig?.value) {
       const tierId = currentTier.id || 'regular'

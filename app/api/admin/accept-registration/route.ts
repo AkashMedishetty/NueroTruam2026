@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
 
@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: `${user.profile.firstName} ${user.profile.lastName}`,
         registrationId: user.registration.registrationId,
-        confirmationDate: new Date().toLocaleDateString('en-IN'),
         registrationType: user.registration.type,
-        specialNote: 'Your registration has been approved by the admin team.'
+        workshopSelections: user.registration.workshopSelections,
+        accompanyingPersons: user.registration.accompanyingPersons
       })
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError)

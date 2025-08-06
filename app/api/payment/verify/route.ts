@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import Payment from '@/lib/models/Payment'
@@ -20,12 +20,12 @@ async function recalculatePaymentBreakdown(user: any, totalAmount: number, curre
     const pricingConfigs = await Configuration.find({
       type: 'pricing',
       isActive: true
-    }).lean()
+    })
 
     const discountConfigs = await Configuration.find({
       type: 'discounts',
       isActive: true
-    }).lean()
+    })
 
     // Build pricing data with defaults
     let registrationCategories: any = {

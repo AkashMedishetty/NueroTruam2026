@@ -16,7 +16,7 @@ export async function GET() {
       type: 'pricing',
       key: 'workshops',
       isActive: true
-    }).lean()
+    })
 
     let workshops: any[] = []
     if (workshopConfig) {

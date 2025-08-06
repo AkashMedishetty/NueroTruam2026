@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { Connection } from 'mongoose'
 
 const MONGODB_URI = process.env.MONGODB_URI
 
@@ -11,6 +11,14 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
+
+declare global {
+  var mongoose: {
+    conn: Connection | null
+    promise: Promise<Connection> | null
+  }
+}
+
 let cached = global.mongoose
 
 if (!cached) {
@@ -29,7 +37,7 @@ async function connectDB() {
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
       cached.conn = mongooseInstance.connection
-      return cached
+      return mongooseInstance.connection
     })
   }
 

@@ -6,10 +6,22 @@ import { SessionProvider } from "@/components/providers/SessionProvider"
 import { Toaster } from "@/components/ui/sonner"
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary"
 import { Analytics } from "./analytics"
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
-const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" })
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial']
+})
+const orbitron = Orbitron({ 
+  subsets: ["latin"], 
+  variable: "--font-orbitron",
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial']
+})
 
 export const metadata: Metadata = {
   title: {
@@ -257,6 +269,25 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.className} antialiased`}>
         <GlobalErrorBoundary>
@@ -271,6 +302,7 @@ export default function RootLayout({
                 {children}
                 <Toaster />
                 <Analytics />
+                <PWAInstallPrompt />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}
               <div className="fixed inset-0 pointer-events-none z-0 opacity-60 dark:opacity-30">

@@ -35,7 +35,7 @@ export async function getCurrentPricingTier(): Promise<PricingTier | null> {
       type: 'pricing',
       key: 'pricing_tiers',
       isActive: true
-    }).lean()
+    })
 
     if (!pricingTiersConfig) {
       return null
@@ -134,7 +134,7 @@ export async function getAllPricingTiers(): Promise<PricingTiersData | null> {
       type: 'pricing',
       key: 'pricing_tiers',
       isActive: true
-    }).lean()
+    })
 
     if (!pricingTiersConfig) {
       return null
@@ -179,9 +179,9 @@ export async function getNextPricingTier(): Promise<{ tier: PricingTier; daysUnt
     // Check all tiers and find the next one
     const allTiers = [
       ...tiersData.specialOffers,
-      { id: 'early-bird', ...tiersData.earlyBird },
-      { id: 'regular', ...tiersData.regular },
-      { id: 'onsite', ...tiersData.onsite }
+      tiersData.earlyBird,
+      tiersData.regular,
+      tiersData.onsite
     ]
 
     let nextTier: PricingTier | null = null

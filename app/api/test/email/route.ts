@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email/service'
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { email, type = 'test' } = body
+  const body = await request.json()
+  const { email, type = 'test' } = body
 
-    if (!email) {
-      return NextResponse.json({
-        success: false,
-        message: 'Email is required'
-      }, { status: 400 })
-    }
+  if (!email) {
+    return NextResponse.json({
+      success: false,
+      message: 'Email is required'
+    }, { status: 400 })
+  }
+
+  try {
 
     let result
 

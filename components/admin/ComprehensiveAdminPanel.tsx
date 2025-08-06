@@ -114,6 +114,13 @@ interface Payment {
   razorpayPaymentId?: string
   transactionDate: string
   paymentMethod?: string
+  userDetails?: {
+    name: string
+    email: string
+    phone: string
+    institution: string
+    registrationType: string
+  }
 }
 
 export function ComprehensiveAdminPanel() {
@@ -303,7 +310,7 @@ export function ComprehensiveAdminPanel() {
         fetch('/api/admin/payments').catch(() => ({ ok: false }))
       ])
 
-      if (dashboardRes.ok) {
+      if (dashboardRes.ok && 'json' in dashboardRes) {
         const dashboardData = await dashboardRes.json()
         setDashboardStats(dashboardData.data || {
           totalRegistrations: 0,
@@ -331,7 +338,7 @@ export function ComprehensiveAdminPanel() {
         })
       }
 
-      if (registrationsRes.ok) {
+      if (registrationsRes.ok && 'json' in registrationsRes) {
         const registrationsData = await registrationsRes.json()
         setRegistrations(registrationsData.data || [])
         setFilteredRegistrations(registrationsData.data || [])
@@ -340,7 +347,7 @@ export function ComprehensiveAdminPanel() {
         setFilteredRegistrations([])
       }
 
-      if (paymentsRes.ok) {
+      if (paymentsRes.ok && 'json' in paymentsRes) {
         const paymentsData = await paymentsRes.json()
         setPayments(paymentsData.data || [])
       } else {

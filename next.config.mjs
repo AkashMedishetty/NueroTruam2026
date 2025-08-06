@@ -27,14 +27,21 @@ const nextConfig = {
     // Add your domains here
     domains: [
       'localhost',
-      'your-production-domain.com',
+      'neurotrauma2026.vercel.app',
+      'neurotrauma2026.in',
       'images.unsplash.com',
       'via.placeholder.com'
     ],
     // Modern image formats for better performance
     formats: ['image/webp', 'image/avif'],
     // Cache optimization
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 3600, // 1 hour
+    // Image sizing for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Enable image optimization for static images
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // Enable compression
