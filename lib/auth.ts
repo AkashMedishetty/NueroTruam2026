@@ -3,11 +3,14 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
+import { getAuthUrl } from '@/lib/auth-config'
 
 export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
+            id: 'credentials',
             name: 'credentials',
+            type: 'credentials',
             credentials: {
                 email: { label: 'Email', type: 'email' },
                 password: { label: 'Password', type: 'password' }
@@ -26,14 +29,29 @@ export const authOptions: NextAuthOptions = {
                     })
 
                     if (!user) {
+                        console.log('Authentication failed: User not found or inactive', {
+                            email: credentials.email.toLowerCase(),
+                            timestamp: new Date().toISOString()
+                        })
                         return null
                     }
 
                     const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
                     if (!isPasswordValid) {
+                        console.log('Authentication failed: Invalid password', {
+                            email: credentials.email.toLowerCase(),
+                            timestamp: new Date().toISOString()
+                        })
                         return null
                     }
+
+                    console.log('Authentication successful', {
+                        email: user.email,
+                        role: user.role,
+                        registrationId: user.registration.registrationId,
+                        timestamp: new Date().toISOString()
+                    })
 
                     return {
                         id: user._id.toString(),
@@ -44,7 +62,12 @@ export const authOptions: NextAuthOptions = {
                         registrationStatus: user.registration.status
                     }
                 } catch (error) {
-                    console.error('Authentication error:', error)
+                    console.error('Authentication error:', {
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                        stack: error instanceof Error ? error.stack : undefined,
+                        email: credentials.email,
+                        timestamp: new Date().toISOString()
+                    })
                     return null
                 }
             }
@@ -52,40 +75,42 @@ export const authOptions: NextAuthOptions = {
     ],
     session: {
         strategy: 'jwt' as const,
-        maxAge: 24 * 60 * 60, // 24 hours
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        updateAge: 24 * 60 * 60, // 24 hours
     },
     jwt: {
-        maxAge: 24 * 60 * 60, // 24 hours
+        maxAge: 30 * 24 * 60 * 60, // 30 days (match session maxAge)
     },
     cookies: {
         sessionToken: {
-            name: `next-auth.session-token`,
+            name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                domain: undefined, // Prevent cross-subdomain sharing
+                // Don't set domain for Vercel - let it default to the current domain
+                domain: undefined
             }
         },
         callbackUrl: {
-            name: `next-auth.callback-url`,
+            name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                domain: undefined,
+                domain: undefined
             }
         },
         csrfToken: {
-            name: `next-auth.csrf-token`,
+            name: process.env.NODE_ENV === 'production' ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                domain: undefined,
+                domain: undefined
             }
         }
     },
@@ -124,4 +149,5 @@ export const authOptions: NextAuthOptions = {
         signIn: '/auth/login',
     },
     secret: process.env.NEXTAUTH_SECRET,
+    debug: process.env.NODE_ENV === 'development', // Only enable debug in development
 }

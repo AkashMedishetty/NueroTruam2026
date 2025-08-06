@@ -38,6 +38,22 @@ export function ProtectedRoute({
       redirectAttempted.current = false
       setIsRedirecting(false)
       redirectGuard.clearAll() // Clear redirect history on successful auth
+      console.log('✅ ProtectedRoute: Session authenticated', {
+        user: session?.user?.email,
+        role: session?.user?.role,
+        pathname
+      })
+    }
+
+    // Add production-specific session debugging
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔍 ProtectedRoute production debug:', {
+        status,
+        hasSession: !!session,
+        pathname,
+        isRedirecting,
+        redirectAttempted: redirectAttempted.current
+      })
     }
 
     const handleRedirect = (targetUrl: string, context: string) => {
@@ -66,6 +82,19 @@ export function ProtectedRoute({
     }
 
     if (status === "unauthenticated") {
+      // In production, add a small delay to allow for session initialization
+      if (process.env.NODE_ENV === 'production' && !redirectAttempted.current) {
+        console.log('⏳ Production: Waiting for session initialization...')
+        timeoutRef.current = setTimeout(() => {
+          if (status === "unauthenticated") {
+            const returnUrl = encodeURIComponent(pathname)
+            const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
+            handleRedirect(loginUrl, "ProtectedRoute-unauthenticated-delayed")
+          }
+        }, 1000) // 1 second delay for production
+        return
+      }
+      
       // Redirect to login with return URL
       const returnUrl = encodeURIComponent(pathname)
       const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`

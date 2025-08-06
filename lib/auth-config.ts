@@ -10,13 +10,13 @@ export function getAuthUrl(): string {
     return `https://${process.env.VERCEL_URL}`;
   }
 
-  // For local development
+  // For local development (match the port used in package.json)
   if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
+    return 'http://localhost:3001';
   }
 
-  // Fallback (this shouldn't happen in production)
-  return 'https://neurotrauma2026.vercel.app';
+  // Fallback for production (use the correct domain)
+  return 'https://nuerotruama2026.vercel.app';
 }
 
 // Auto-detect APP_URL (same logic as NEXTAUTH_URL)
@@ -35,6 +35,43 @@ export function getBaseUrl(): string {
   return getAppUrl();
 }
 
+// Validate required environment variables
+export function validateEnvironmentVariables(): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  // Check for required environment variables
+  if (!process.env.NEXTAUTH_SECRET) {
+    errors.push('NEXTAUTH_SECRET is required');
+  }
+  
+  if (!process.env.MONGODB_URI) {
+    errors.push('MONGODB_URI is required');
+  }
+  
+  // Warn about missing optional variables
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.NEXTAUTH_URL && !process.env.VERCEL_URL) {
+      errors.push('NEXTAUTH_URL or VERCEL_URL should be set in production');
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
 // Export for use in API routes and components
 export const APP_URL = getAppUrl();
 export const NEXTAUTH_URL = getAuthUrl();
+
+// Log environment configuration in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔧 Auth Configuration:', {
+    NEXTAUTH_URL: NEXTAUTH_URL,
+    APP_URL: APP_URL,
+    NODE_ENV: process.env.NODE_ENV,
+    hasNEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET,
+    hasMONGODB_URI: !!process.env.MONGODB_URI
+  });
+}

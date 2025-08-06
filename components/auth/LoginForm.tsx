@@ -61,20 +61,39 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           description: "Welcome back! Redirecting to your dashboard...",
         });
 
-        // Use the redirect guard before redirecting
-        if (redirectGuard.canRedirect(callbackUrl, "LoginForm-success")) {
-          redirectGuard.clearAll();
-          setTimeout(() => {
-            router.push(callbackUrl);
-          }, 400); // Small delay to ensure session propagation
-        } else {
-          toast({
-            title: "Redirect Blocked",
-            description: "Login redirect blocked to prevent loop. Taking you to dashboard.",
-            variant: "destructive",
-          });
-          router.push("/dashboard");
-        }
+        // Force session refresh and redirect
+        setTimeout(async () => {
+          try {
+            // Refresh the router to update session
+            router.refresh();
+            
+            // Use the redirect guard before redirecting
+            if (redirectGuard.canRedirect(callbackUrl, "LoginForm-success")) {
+              redirectGuard.clearAll();
+              // Use window.location.href for production to ensure proper redirect
+              if (process.env.NODE_ENV === 'production') {
+                window.location.href = callbackUrl;
+              } else {
+                router.push(callbackUrl);
+              }
+            } else {
+              toast({
+                title: "Redirect Blocked",
+                description: "Login redirect blocked to prevent loop. Taking you to dashboard.",
+                variant: "destructive",
+              });
+              if (process.env.NODE_ENV === 'production') {
+                window.location.href = "/dashboard";
+              } else {
+                router.push("/dashboard");
+              }
+            }
+          } catch (redirectError) {
+            console.error('Redirect error:', redirectError);
+            // Fallback redirect
+            window.location.href = "/dashboard";
+          }
+        }, 1000); // Increased delay for session propagation in production
       }
     } catch (error) {
       setError("An unexpected error occurred");

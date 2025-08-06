@@ -1,0 +1,99 @@
+"use client"
+
+import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+export default function AuthDebugPage() {
+  const { data: session, status } = useSession()
+  const [cookies, setCookies] = useState<string[]>([])
+  const [clientInfo, setClientInfo] = useState<any>({})
+
+  useEffect(() => {
+    // Get all cookies
+    const allCookies = document.cookie.split(';').map(cookie => cookie.trim())
+    setCookies(allCookies)
+
+    // Get client info
+    setClientInfo({
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      origin: window.location.origin,
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV
+    })
+  }, [])
+
+  const refreshSession = async () => {
+    window.location.reload()
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Authentication Debug</CardTitle>
+          <CardDescription>
+            Debug information for authentication issues
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 className="font-semibold mb-2">Session Status</h3>
+            <p className="text-sm bg-gray-100 p-2 rounded">
+              Status: {status}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Session Data</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(session, null, 2)}
+            </pre>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Client Information</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(clientInfo, null, 2)}
+            </pre>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Cookies</h3>
+            <div className="text-xs bg-gray-100 p-2 rounded space-y-1">
+              {cookies.length > 0 ? (
+                cookies.map((cookie, index) => (
+                  <div key={index} className="break-all">
+                    {cookie}
+                  </div>
+                ))
+              ) : (
+                <p>No cookies found</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={refreshSession}>
+              Refresh Session
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth/login'}
+            >
+              Go to Login
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/dashboard'}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
