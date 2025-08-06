@@ -5,9 +5,16 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { Navigation } from "@/components/navigation"
-import { Calendar, MapPin, Users, Award, Play, Sparkles, ArrowRight } from "lucide-react"
+import { Calendar, MapPin, Users, Award, Play, Sparkles, ArrowRight, X, Navigation as NavigationIcon, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 // Lazy load 3D components for better performance
 const BrainModel = dynamic(() => import("@/components/3d/BrainModel"), {
@@ -41,6 +48,8 @@ export default function HomePage() {
   })
   const [isPlaying, setIsPlaying] = useState(true)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [selectedLocation, setSelectedLocation] = useState<any>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { scrollY } = useScroll()
   const y1 = useTransform(scrollY, [0, 1000], [0, -200])
@@ -95,6 +104,21 @@ export default function HomePage() {
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [x, y])
+
+  const handleLearnMore = (place: any) => {
+    setSelectedLocation(place)
+    setIsModalOpen(true)
+  }
+
+  const handleGetDirections = (placeName: string) => {
+    const query = encodeURIComponent(`${placeName} Hyderabad India`)
+    window.open(`https://www.google.com/maps/search/${query}`, '_blank')
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedLocation(null)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 text-gray-800 overflow-hidden dark:from-gray-900 dark:to-gray-900 dark:text-gray-100">
@@ -180,6 +204,8 @@ export default function HomePage() {
                     </Button>
                   </Link>
                 </motion.div>
+                {/* Watch Trailer Button - Commented out as requested */}
+                {/*
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href="/program">
                     <Button variant="outline" className="px-8 py-4 text-lg border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-full transition-all duration-300 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-900/20">
@@ -188,38 +214,58 @@ export default function HomePage() {
                   </Button>
                   </Link>
                 </motion.div>
+                */}
               </div>
               </motion.div>
 
-              {/* Stats Grid */}
+              {/* Organized By Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4, ease: "easeOut" }}
-                className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-md md:max-w-none"
+                className="text-center max-w-4xl mx-auto"
               >
-                {[
-                  { number: "TBD", label: "Neuro Experts", icon: Users },
-                  { number: "TBD", label: "Countries", icon: MapPin },
-                  { number: "TBD", label: "Sessions", icon: Calendar },
-                  { number: "TBD", label: "Awards", icon: Award },
-                ].map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    className="text-center p-4 rounded-xl bg-white/80 backdrop-blur-xl border border-orange-100 hover:bg-white hover:shadow-md transition-all duration-300 dark:bg-gray-800/80 dark:border-gray-700 dark:hover:bg-gray-800"
-                    whileHover={{ y: -3, scale: 1.02 }}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.05, duration: 0.3 }}
-                  >
-                    {(() => {
-  const Icon = stat.icon;
-  return <Icon className="w-6 h-6 text-orange-500 mx-auto mb-2" />;
-})()}
-                    <div className="text-2xl font-bold text-orange-600 mb-1">{stat.number}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wide">{stat.label}</div>
-                  </motion.div>
-                ))}
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">
+                  Organized by
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center justify-items-center">
+                  {[
+                    { 
+                      src: "/NTSILOGO.png", 
+                      alt: "Neurotrauma Society of India", 
+                      name: "Neurotrauma Society of India" 
+                    },
+                    { 
+                      src: "/brainandspinesociety.png", 
+                      alt: "Brain and Spine Society", 
+                      name: "Brain and Spine Society" 
+                    },
+                    { 
+                      src: "/KIMS.png", 
+                      alt: "KIMS Hospitals", 
+                      name: "KIMS Hospitals" 
+                    },
+                  ].map((org, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex flex-col items-center space-y-4 p-6 rounded-xl bg-white/80 backdrop-blur-xl border border-orange-100 hover:bg-white hover:shadow-lg transition-all duration-300 dark:bg-gray-800/80 dark:border-gray-700 dark:hover:bg-gray-800 w-full max-w-xs"
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
+                    >
+                      <img 
+                        src={org.src}
+                        alt={org.alt}
+                        className="h-16 w-auto object-contain filter hover:brightness-110 transition-all duration-300"
+                      />
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">
+                        {org.name}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             </div>
 
@@ -281,7 +327,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Organizing Committee Section */}
+      {/* Welcome Message Section */}
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-white dark:bg-gray-900"></div>
 
@@ -293,11 +339,11 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            ORGANIZING COMMITTEE
+            WELCOME MESSAGE
           </motion.h2>
 
           <div className="max-w-7xl mx-auto">
-            {/* Committee Content with Spine Model - 30-70 Split */}
+            {/* Welcome Content with Spine Model - 30-70 Split */}
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               {/* Left side: 3D Spine Model - 35% */}
               <div className="lg:w-[35%] flex justify-center items-center">
@@ -306,7 +352,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right side: Committee Content - 65% */}
+              {/* Right side: Welcome Content - 65% */}
               <div className="lg:w-[65%]">
               <motion.div
                 className="bg-white rounded-3xl p-8 shadow-2xl border border-orange-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50 flex flex-col justify-center min-h-[600px]"
@@ -315,34 +361,107 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
-              <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">A Message from Our Chairman</h3>
+              <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Welcome to NeuroTrauma 2026</h3>
               <div className="prose prose-lg text-gray-700 dark:text-gray-300 leading-relaxed">
                 <p className="mb-6">
-                  Dear Esteemed Colleagues and Neurotrauma Professionals,
+                  Dear Healthcare Professionals, Researchers, and Medical Innovators,
                 </p>
                 <p className="mb-6">
-                  It is with immense pleasure and honor that we invite you to NeuroTrauma 2026, the Annual Conference of the Neurotrauma Society of India, taking place in the vibrant city of Hyderabad. This landmark event promises to bring together the brightest minds in neurotrauma care for three transformative days of groundbreaking discussions, innovative presentations, and collaborative learning.
+                  We are delighted to welcome you to NeuroTrauma 2026, a premier gathering that represents the pinnacle of neurotrauma medical excellence. This extraordinary conference will bring together the most brilliant minds in neuroscience, emergency medicine, and trauma care under one roof in the historic city of Hyderabad.
                 </p>
                 <p className="mb-6">
-                  Our conference theme, "Advancing Neurotrauma Care & Research," reflects our commitment to pushing the boundaries of what's possible in brain and spinal injury management. From cutting-edge surgical techniques to revolutionary rehabilitation protocols, we'll explore the latest developments that are reshaping patient outcomes in neurotrauma care.
+                  For three transformative days, we will explore the frontiers of neurotrauma medicine, from breakthrough surgical techniques and innovative rehabilitation protocols to cutting-edge research in neural regeneration and brain-computer interfaces. Our comprehensive program features world-renowned keynote speakers, interactive workshops, live surgical demonstrations, and unparalleled networking opportunities.
                 </p>
                 <p className="mb-6">
-                  Hyderabad, with its rich medical heritage and world-class healthcare facilities, provides the perfect backdrop for this gathering of neurotrauma excellence. We've curated an exceptional program featuring renowned international speakers, hands-on workshops, and networking opportunities that will enhance your practice and expand your professional network.
+                  Hyderabad, known as the "City of Pearls" and a burgeoning hub of medical excellence, provides the perfect setting for this monumental event. The city's rich heritage in healthcare innovation and its state-of-the-art medical facilities create an inspiring backdrop for advancing neurotrauma care.
                 </p>
                 <p className="mb-8">
-                  Whether you're a seasoned neurosurgeon, an emergency medicine specialist, a resident beginning your journey, or a healthcare professional seeking to broaden your neurotrauma expertise, this conference offers something valuable for everyone. Together, we'll shape the future of neurotrauma care and improve outcomes for patients across India and beyond.
+                  Whether you are a neurosurgeon, emergency physician, researcher, resident, or allied healthcare professional, NeuroTrauma 2026 offers invaluable insights, practical knowledge, and professional connections that will enhance your practice and contribute to better patient outcomes. Join us in shaping the future of neurotrauma medicine and making a lasting impact on countless lives.
                 </p>
                 
                 <div className="border-t border-orange-200 dark:border-gray-600 pt-6">
-                  <p className="font-semibold text-gray-800 dark:text-gray-100">Dr. Priya Krishnamurthy</p>
-                  <p className="text-orange-600 dark:text-orange-400">Chairman, Organizing Committee</p>
-                  <p className="text-gray-600 dark:text-gray-400">President, Neurotrauma Society of India</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-100">The Organizing Committee</p>
+                  <p className="text-orange-600 dark:text-orange-400">NeuroTrauma Society of India</p>
                 </div>
               </div>
             </motion.div>
             </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Organizing Committee Members Section */}
+      <section className="py-20 relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-red-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-900">
+        <div className="container mx-auto px-6 relative z-10">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 via-orange-600 to-red-600 bg-clip-text text-transparent">
+              Meet Our Leadership Team
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Distinguished professionals leading the charge in neurotrauma excellence and innovation.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: "Dr. Manas Panigrahi",
+                title: "Organising Chairman"
+              },
+              {
+                name: "Dr. Raghavendra H",
+                title: "Organising Secretary"
+              },
+              {
+                name: "Dr. Swetha P",
+                title: "Treasurer"
+              }
+            ].map((member, index) => (
+              <motion.div
+                key={index}
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-orange-100 dark:border-gray-700 hover:shadow-2xl hover:shadow-orange-100/20 dark:hover:shadow-gray-700/20 transition-all duration-300"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+              >
+                <div className="text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                    {member.name}
+                  </h3>
+                  <p className="text-orange-600 font-semibold">{member.title}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            className="text-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Link href="/committee">
+              <Button className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-full shadow-lg hover:shadow-orange-200/50 transition-all duration-300">
+                View Complete Committee
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
@@ -516,7 +635,7 @@ export default function HomePage() {
                     bestTime: "Morning",
                     highlights: ["Rare Artifacts", "Art Collections", "Historical Items"],
                     icon: "🏛️",
-                    image: "/placeholder.jpg"
+                    image: "/Slarjung.png"
                   },
                   {
                     name: "HITEC City",
@@ -527,7 +646,7 @@ export default function HomePage() {
                     bestTime: "Evening",
                     highlights: ["Modern Architecture", "Shopping Malls", "Fine Dining"],
                     icon: "🏢",
-                    image: "/placeholder.jpg"
+                    image: "/Hitec City.jpg"
                   },
                   {
                     name: "Birla Mandir",
@@ -538,18 +657,7 @@ export default function HomePage() {
                     bestTime: "Evening",
                     highlights: ["Marble Architecture", "City Views", "Peaceful Ambiance"],
                     icon: "🛕",
-                    image: "/placeholder.jpg"
-                  },
-                  {
-                    name: "Laad Bazaar",
-                    description: "Famous shopping street known for bangles and pearls",
-                    category: "Shopping", 
-                    rating: "4.2",
-                    time: "2-3 hours",
-                    bestTime: "Evening",
-                    highlights: ["Traditional Bangles", "Pearl Jewelry", "Local Crafts"],
-                    icon: "🛍️",
-                    image: "/placeholder.jpg"
+                    image: "/birlamandir.jpg"
                   }
                 ].map((place, index) => (
                 <motion.div
@@ -616,7 +724,10 @@ export default function HomePage() {
                           </div>
 
                           {/* Learn More Button */}
-                          <button className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200">
+                          <button 
+                            onClick={() => handleLearnMore(place)}
+                            className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105"
+                          >
                             Learn More
                           </button>
                         </div>
@@ -768,7 +879,7 @@ export default function HomePage() {
               <Link href="/abstracts">
                 <Button
                   variant="outline"
-                  className="px-12 py-6 text-xl border-2 border-white text-white hover:bg-white/10 rounded-full backdrop-blur-sm font-bold"
+                  className="px-12 py-6 text-xl border-2 border-white text-white bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm font-bold shadow-lg"
                 >
                   Submit Innovation
                 </Button>
@@ -781,11 +892,49 @@ export default function HomePage() {
       {/* Comprehensive Footer */}
       <footer className="bg-gradient-to-br from-gray-900 to-black text-white py-20">
         <div className="container mx-auto px-6">
+          {/* Organizers Section */}
+          <div className="mb-16">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold mb-8 text-orange-400 leading-relaxed">Organized By</h3>
+              <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
+                {/* Neurotrauma Society of India */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img 
+                    src="/NTSILOGO.png" 
+                    alt="Neurotrauma Society of India" 
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">Neurotrauma Society of India</p>
+                </div>
+                
+                {/* Brain and Spine Society */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img 
+                    src="/brainandspinesociety.png" 
+                    alt="Brain and Spine Society" 
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">Brain and Spine Society</p>
+                </div>
+                
+                {/* KIMS Hospitals */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img 
+                    src="/KIMS.png" 
+                    alt="KIMS Hospitals" 
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">KIMS Hospitals</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Main Footer Content */}
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
+          <div className="grid md:grid-cols-5 gap-8 mb-16">
             {/* Conference Info */}
             <div>
-              <h3 className="text-4xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+              <h3 className="text-4xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent leading-tight py-2">
                 NEUROTRAUMA 2026
               </h3>
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -835,13 +984,12 @@ export default function HomePage() {
               
               <div className="mb-6">
                 <h5 className="font-semibold text-white mb-2">Conference Secretariat</h5>
-                <p className="text-gray-300 text-sm">Dr. Priya Krishnamurthy</p>
-                <p className="text-gray-400 text-sm">President, Neurotrauma Society of India</p>
+                <p className="text-gray-300 text-sm">Dr. Raghavendra H</p>
                 <p className="text-gray-400 text-sm">Conference Secretariat</p>
                 <p className="text-gray-400 text-sm">Hyderabad, India 500001</p>
               </div>
 
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <h5 className="font-semibold text-white mb-2">Registration Inquiries</h5>
                 <p className="text-gray-300 text-sm">+91 9876 543 210</p>
                 <p className="text-gray-300 text-sm">+91 9876 543 211</p>
@@ -855,6 +1003,27 @@ export default function HomePage() {
                 <p className="text-gray-300 text-sm">support@neurotrauma2026.in</p>
                 <p className="text-gray-300 text-sm">abstracts@neurotrauma2026.in</p>
                 <p className="text-gray-400 text-xs">Available 24/7</p>
+              </div> */}
+            </div>
+
+            {/* Conference Manager */}
+            <div>
+              <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Conference Manager</h4>
+              
+              <div className="mb-6">
+                <h5 className="font-semibold text-white mb-2">Mr. Kiran Kumar Lella</h5>
+                <p className="text-gray-400 text-sm mb-2">Conference Manager</p>
+                <p className="text-gray-300 text-sm mb-1">Mobile: +91 – 9676541985</p>
+                <p className="text-gray-300 text-sm mb-4">Email: kiran@cmchyd.com</p>
+                
+                {/* CMC Logo under Conference Manager */}
+                 <div className="flex items-center mt-4">
+                   <img 
+                     src="/CMC Logo Footer.png" 
+                     alt="CMC Logo" 
+                     className="h-36 w-auto object-contain"
+                   />
+                 </div>
               </div>
             </div>
 
@@ -863,20 +1032,24 @@ export default function HomePage() {
               <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Follow Us</h4>
               <div className="flex space-x-4 mb-8">
                 {[
-                  { icon: "💼", label: "LinkedIn" },
-                  { icon: "🐦", label: "Twitter" },
-                  { icon: "📘", label: "Facebook" },
-                  { icon: "📷", label: "Instagram" },
-                  { icon: "📺", label: "YouTube" }
+                  { logo: "/LinkedIn_logo_initials.png", label: "LinkedIn" },
+                  { logo: "/Logo_of_Twitter.png", label: "Twitter" },
+                  { logo: "/Facebook_Logo_(2019).png", label: "Facebook" },
+                  { logo: "/Instagram_icon.png", label: "Instagram" },
+                  { logo: "/Youtube_logo.png", label: "YouTube" }
                 ].map((social, index) => (
                   <motion.div
                     key={index}
-                    className="w-10 h-10 bg-orange-600/20 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors cursor-pointer"
+                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer p-1"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     title={social.label}
                   >
-                    <span className="text-lg">{social.icon}</span>
+                    <img 
+                      src={social.logo} 
+                      alt={social.label} 
+                      className="w-6 h-6 object-contain"
+                    />
                   </motion.div>
                 ))}
               </div>
@@ -884,11 +1057,8 @@ export default function HomePage() {
               <div>
                 <h5 className="font-semibold text-white mb-4">Tech Partner</h5>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-700 rounded flex items-center justify-center text-white font-bold text-sm">
-                    PH
-                  </div>
                   <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-                    PurpleHat
+                    PurpleHat Events
                   </span>
                 </div>
               </div>
@@ -899,18 +1069,117 @@ export default function HomePage() {
           <div className="border-t border-gray-700 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="text-gray-400 text-sm">
-                <p>&copy; 2026 NeuroTrauma 2026 Conference. All rights reserved.</p>
-                <p>Organized by Neurotrauma Society of India | Hyderabad, India</p>
+                <p>&copy; 2026 NeuroTrauma Conference. All rights reserved.</p>
+                <p>Hyderabad, India</p>
               </div>
               <div className="flex space-x-6 text-gray-400 text-sm">
-                <Link href="#" className="hover:text-orange-400 transition-colors">Privacy Policy</Link>
-                <Link href="#" className="hover:text-orange-400 transition-colors">Terms of Service</Link>
-                <Link href="#" className="hover:text-orange-400 transition-colors">Cookie Policy</Link>
+                <Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link>
+                <Link href="/terms-conditions" className="hover:text-orange-400 transition-colors">Terms & Conditions</Link>
+                <Link href="/cookies-policy" className="hover:text-orange-400 transition-colors">Cookies Policy</Link>
               </div>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Location Details Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
+              <span className="text-2xl">{selectedLocation?.icon}</span>
+              {selectedLocation?.name}
+            </DialogTitle>
+            <DialogDescription className="text-lg text-gray-600 dark:text-gray-400">
+              {selectedLocation?.description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedLocation && (
+            <div className="space-y-6">
+              {/* Location Image */}
+              <div className="w-full h-64 rounded-lg overflow-hidden">
+                <img 
+                  src={selectedLocation.image} 
+                  alt={selectedLocation.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Location Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Category</h3>
+                    <div className="inline-block px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-medium">
+                      {selectedLocation.category}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Visit Duration</h3>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <span className="text-orange-500 mr-2">⏰</span>
+                      {selectedLocation.time}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Best Time to Visit</h3>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <span className="text-orange-500 mr-2">🌅</span>
+                      {selectedLocation.bestTime}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Rating</h3>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <span className="text-yellow-500 mr-2">⭐</span>
+                      {selectedLocation.rating}/5.0
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Key Highlights</h3>
+                  <div className="space-y-2">
+                    {selectedLocation.highlights?.map((highlight: string, idx: number) => (
+                      <div key={idx} className="flex items-center text-gray-600 dark:text-gray-400">
+                        <span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                        {highlight}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button 
+                  onClick={() => handleGetDirections(selectedLocation.name)}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  <NavigationIcon className="w-4 h-4 mr-2" />
+                  Get Directions
+                </Button>
+                
+                <Button 
+                  onClick={() => {
+                    const searchQuery = encodeURIComponent(`${selectedLocation.name} Hyderabad tourism`)
+                    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank')
+                  }}
+                  variant="outline"
+                  className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Learn More Online
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

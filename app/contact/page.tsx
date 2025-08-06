@@ -22,15 +22,116 @@ export default function ContactPage() {
   })
 
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+    
+    // Name validation
+    if (!formData.name.trim()) {
+      errors.name = 'Name is required'
+    } else if (formData.name.length > 100) {
+      errors.name = 'Name must be less than 100 characters'
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.name)) {
+      errors.name = 'Name can only contain letters, spaces, hyphens, and apostrophes'
+    }
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address'
+    } else if (formData.email.length > 100) {
+      errors.email = 'Email must be less than 100 characters'
+    }
+    
+    // Phone validation (optional but must be valid if provided)
+    if (formData.phone.trim() && !/^\+?[\d\s-()]+$/.test(formData.phone)) {
+      errors.phone = 'Please enter a valid phone number'
+    } else if (formData.phone.trim() && formData.phone.length < 10) {
+      errors.phone = 'Phone number must be at least 10 digits'
+    }
+    
+    // Subject validation
+    if (!formData.subject) {
+      errors.subject = 'Please select a subject'
+    }
+    
+    // Message validation
+    if (!formData.message.trim()) {
+      errors.message = 'Message is required'
+    } else if (formData.message.length < 10) {
+      errors.message = 'Message must be at least 10 characters'
+    } else if (formData.message.length > 1000) {
+      errors.message = 'Message must be less than 1000 characters'
+    }
+    
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate form submission
-    setIsSubmitted(true)
+    setIsSubmitting(true)
+    setSubmitError('')
+    setFieldErrors({})
+
+    // Frontend validation
+    if (!validateForm()) {
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setIsSubmitted(true)
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+        setFieldErrors({})
+      } else {
+        // Handle API validation errors
+        if (result.errors && Array.isArray(result.errors)) {
+          const apiErrors: Record<string, string> = {}
+          result.errors.forEach((error: string) => {
+            if (error.includes('name:')) apiErrors.name = error.split(': ')[1]
+            else if (error.includes('email:')) apiErrors.email = error.split(': ')[1]
+            else if (error.includes('phone:')) apiErrors.phone = error.split(': ')[1]
+            else if (error.includes('subject:')) apiErrors.subject = error.split(': ')[1]
+            else if (error.includes('message:')) apiErrors.message = error.split(': ')[1]
+          })
+          setFieldErrors(apiErrors)
+        }
+        setSubmitError(result.message || 'Failed to send message')
+      }
+    } catch (error) {
+      setSubmitError('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
   }
 
   if (isSubmitted) {
@@ -87,11 +188,13 @@ export default function ContactPage() {
                       <MapPin className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Conference Secretariat</h3>
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Conference Manager</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Hyderabad International Convention Center
+                        Mr. Kiran Kumar Lella
                         <br />
-                        123 Convention Road, Hyderabad, Telangana 500001, India
+                        Conference Manager
+                        <br />
+                        Hyderabad, India
                       </p>
                     </div>
                   </div>
@@ -102,9 +205,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Phone</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        +91 8765432100
-                        <br />
-                        +91 9876543210
+                        +91 – 9676541985
                       </p>
                     </div>
                   </div>
@@ -115,9 +216,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Email</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        info@neurotraumacon2026.com
-                        <br />
-                        support@neurotraumacon2026.com
+                        kiran@cmchyd.com
                       </p>
                     </div>
                   </div>
@@ -128,9 +227,9 @@ export default function ContactPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Working Hours</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Monday - Friday: 9:00 AM - 5:00 PM
+                        Monday - Friday: 9:00 AM - 6:00 PM
                         <br />
-                        Saturday: 9:00 AM - 1:00 PM
+                        Available for conference inquiries
                       </p>
                     </div>
                   </div>
@@ -147,9 +246,12 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
                         placeholder="Enter your full name"
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                        className={`dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 ${fieldErrors.name ? 'border-red-500 dark:border-red-500' : ''}`}
                         required
                       />
+                      {fieldErrors.name && (
+                        <p className="text-red-500 text-sm mt-1">{fieldErrors.name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address *</label>
@@ -158,9 +260,12 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
                         placeholder="your.email@example.com"
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                        className={`dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 ${fieldErrors.email ? 'border-red-500 dark:border-red-500' : ''}`}
                         required
                       />
+                      {fieldErrors.email && (
+                        <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
@@ -169,13 +274,16 @@ export default function ContactPage() {
                         value={formData.phone}
                         onChange={(e) => handleInputChange("phone", e.target.value)}
                         placeholder="+91 9876543210"
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                        className={`dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 ${fieldErrors.phone ? 'border-red-500 dark:border-red-500' : ''}`}
                       />
+                      {fieldErrors.phone && (
+                        <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject *</label>
                       <Select value={formData.subject} onValueChange={(value) => handleInputChange("subject", value)}>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <SelectTrigger className={`dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${fieldErrors.subject ? 'border-red-500 dark:border-red-500' : ''}`}>
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                         <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
@@ -187,21 +295,43 @@ export default function ContactPage() {
                           <SelectItem value="other" className="dark:text-gray-100 dark:hover:bg-gray-600">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {fieldErrors.subject && (
+                        <p className="text-red-500 text-sm mt-1">{fieldErrors.subject}</p>
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message * (minimum 10 characters)</label>
                       <Textarea
                         value={formData.message}
                         onChange={(e) => handleInputChange("message", e.target.value)}
-                        placeholder="Type your message here..."
+                        placeholder="Type your message here (at least 10 characters)..."
                         rows={5}
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                        className={`dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 ${fieldErrors.message ? 'border-red-500 dark:border-red-500' : ''}`}
                         required
                       />
+                      <div className="flex justify-between items-center mt-1">
+                        <div>
+                          {fieldErrors.message && (
+                            <p className="text-red-500 text-sm">{fieldErrors.message}</p>
+                          )}
+                        </div>
+                        <p className={`text-xs ${formData.message.length < 10 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {formData.message.length}/1000 characters
+                        </p>
+                      </div>
                     </div>
-                    <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600">
+                    {submitError && (
+                      <div className="text-red-600 dark:text-red-400 text-sm mb-4">
+                        {submitError}
+                      </div>
+                    )}
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="w-full bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 disabled:opacity-50"
+                    >
                       <Send className="w-4 h-4 mr-2" />
-                      Send Message
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </form>
                 </div>
@@ -210,7 +340,8 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* FAQ Section */}
+        {/* FAQ Section - Commented out as requested */}
+        {/*
         <section className="py-12 md:py-16 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4">
             <motion.div
@@ -267,6 +398,7 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
+        */}
 
         {/* Map Section */}
         <section className="py-12 md:py-16">

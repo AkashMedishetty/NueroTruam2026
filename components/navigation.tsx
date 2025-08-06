@@ -147,24 +147,18 @@ export function Navigation({ currentPage }: NavigationProps = {}) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center ml-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-3"
+              className="flex items-center"
             >
-              {/* Logo Placeholder */}
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">NT</span>
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-                  NeuroTrauma 2026
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  Neurotrauma Society of India
-                </div>
-              </div>
+              {/* Logo Image */}
+              <img 
+                src="/NueroTraumalogo.png" 
+                alt="NeuroTrauma 2026 Logo" 
+                className="h-16 lg:h-20 w-auto object-contain"
+              />
             </motion.div>
           </Link>
 

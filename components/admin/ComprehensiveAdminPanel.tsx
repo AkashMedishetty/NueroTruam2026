@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PricingTiersManager } from "./PricingTiersManager"
 import { WorkshopManager } from "./WorkshopManager"
+import { ContactMessagesManager } from "./ContactMessagesManager"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -61,7 +62,9 @@ import {
   Database,
   TrendingUp,
   UserCheck,
-  Receipt
+  Receipt,
+  Bell,
+  MessageCircle
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -487,7 +490,7 @@ export function ComprehensiveAdminPanel() {
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-8">
+                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Dashboard
@@ -515,6 +518,14 @@ export function ComprehensiveAdminPanel() {
           <TabsTrigger value="emails" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Emails
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            Messages
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -1342,6 +1353,44 @@ export function ComprehensiveAdminPanel() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Notifications Tab */}
+        <TabsContent value="notifications" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification Subscriptions
+              </CardTitle>
+              <CardDescription>
+                Manage email notification subscriptions for conference updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Notification subscriptions management
+                </p>
+                <p className="text-sm text-gray-400 mb-4">
+                  For detailed notification management, visit the dedicated notifications page
+                </p>
+                <Button 
+                  onClick={() => window.open('/admin/notifications', '_blank')}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <Bell className="mr-2 h-4 w-4" />
+                  Open Notifications Manager
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Contact Messages Tab */}
+        <TabsContent value="messages" className="space-y-6">
+          <ContactMessagesManager />
         </TabsContent>
       </Tabs>
     </div>

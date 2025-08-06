@@ -271,12 +271,38 @@ export default function ProgramPage() {
   const { scrollY } = useScroll()
   const y1 = useTransform(scrollY, [0, 1000], [0, -200])
 
-  const handleNotifySubmit = (e: React.FormEvent) => {
+  const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle email submission
-    console.log("Notify email:", email)
-    setIsNotifyOpen(false)
-    setEmail("")
+    
+    try {
+      const response = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'program'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+// Remove setIsSubmitted since it's not defined and not needed
+        setTimeout(() => {
+          setIsNotifyOpen(false)
+// Remove setIsSubmitted since it's not defined
+          setEmail("")
+        }, 2000)
+      } else {
+        console.error('Failed to subscribe:', data.error)
+        alert('Failed to subscribe. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error subscribing to notifications:', error)
+      alert('Failed to subscribe. Please try again.')
+    }
   }
 
   return (
@@ -478,7 +504,7 @@ export default function ProgramPage() {
                 <Link href="/abstracts">
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto px-8 md:px-12 py-4 md:py-6 text-lg md:text-xl border-2 border-white text-white hover:bg-white/10 rounded-full backdrop-blur-sm font-bold"
+                    className="w-full sm:w-auto px-8 md:px-12 py-4 md:py-6 text-lg md:text-xl border-2 border-white text-white bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm font-bold shadow-lg"
                   >
                     Submit Abstract
                   </Button>

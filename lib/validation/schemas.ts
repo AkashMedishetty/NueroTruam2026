@@ -185,14 +185,43 @@ export const bulkEmailSchema = z.object({
   senderName: z.string().max(100, 'Sender name must be less than 100 characters').optional()
 })
 
+
 // Contact Form Schema
 export const contactFormSchema = z.object({
   name: z
     .string()
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters')
+    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes')
     .trim(),
-    
+  
+  email: z
+    .string()
+    .email('Please enter a valid email address')
+    .max(100, 'Email must be less than 100 characters')
+    .toLowerCase()
+    .trim(),
+  
+  phone: z
+    .string()
+    .refine((val) => val === '' || (val.length >= 10 && /^\+?[\d\s-()]+$/.test(val)), 
+      'Phone number must be at least 10 digits and contain only valid characters'),
+  
+  subject: z
+    .string()
+    .min(1, 'Subject is required')
+    .max(200, 'Subject must be less than 200 characters')
+    .trim(),
+  
+  message: z
+    .string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(1000, 'Message must be less than 1000 characters')
+    .trim()
+})
+
+// Notification Subscription Schema
+export const notificationSubscriptionSchema = z.object({
   email: z
     .string()
     .email('Please enter a valid email address')
@@ -200,23 +229,9 @@ export const contactFormSchema = z.object({
     .toLowerCase()
     .trim(),
     
-  subject: z
-    .string()
-    .min(1, 'Subject is required')
-    .max(200, 'Subject must be less than 200 characters')
-    .trim(),
-    
-  message: z
-    .string()
-    .min(10, 'Message must be at least 10 characters long')
-    .max(2000, 'Message must be less than 2000 characters')
-    .trim(),
-    
-  phone: z
-    .string()
-    .regex(/^\+?[\d\s-()]+$/, 'Please enter a valid phone number')
-    .max(15, 'Phone number must be less than 15 digits')
-    .optional()
+  source: z.enum(['program', 'abstracts', 'venue'], {
+    errorMap: () => ({ message: 'Invalid source. Must be program, abstracts, or venue' })
+  })
 })
 
 // Generic validation helper

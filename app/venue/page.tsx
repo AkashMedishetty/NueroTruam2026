@@ -17,13 +17,38 @@ export default function VenuePage() {
   const y1 = useTransform(scrollY, [0, 300], [0, -50])
   const opacity = useTransform(scrollY, [0, 300], [1, 0.3])
 
-  const handleNotifySubmit = (e: React.FormEvent) => {
+  const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle email submission
-    console.log("Notify email:", email)
-    setIsNotifyOpen(false)
-    setEmail("")
-    setIsSubmitted(true)
+    
+    try {
+      const response = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'venue'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsSubmitted(true)
+        setTimeout(() => {
+          setIsNotifyOpen(false)
+          setIsSubmitted(false)
+          setEmail("")
+        }, 2000)
+      } else {
+        console.error('Failed to subscribe:', data.error)
+        alert('Failed to subscribe. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error subscribing to notifications:', error)
+      alert('Failed to subscribe. Please try again.')
+    }
   }
 
   return (
@@ -75,7 +100,7 @@ export default function VenuePage() {
                   <Link href="/register">
                     <Button 
                       variant="outline"
-                      className="px-8 py-4 text-lg border-2 border-white text-white hover:bg-white/10 rounded-full backdrop-blur-sm"
+                      className="px-8 py-4 text-lg border-2 border-white text-white bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm font-bold shadow-lg"
                     >
                       Register Now
                     </Button>

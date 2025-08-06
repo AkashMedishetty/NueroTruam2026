@@ -10,82 +10,82 @@ import Link from "next/link"
 const committeeMembers = [
   {
     id: 1,
-    name: "Dr. Rajesh Kumar",
-    title: "Conference Chairman",
-    institution: "AIIMS Hyderabad",
-    specialty: "Brain & Spinal Injury Surgery",
+    name: "Dr. Manas Panigrahi",
+    title: "Organising Chairman",
+    // institution: "AIIMS Hyderabad",
+    // specialty: "Brain & Spinal Injury Surgery",
     image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Rajesh Kumar is a visionary neurotrauma surgeon pioneering the future of brain and spinal injury treatment with AI-assisted surgical techniques. His revolutionary work in nano-medicine has transformed patient outcomes globally.",
-    achievements: ["Padma Shri Awardee", "500+ Research Papers", "AI Surgery Pioneer", "Global Innovation Leader"],
-    email: "rajesh.kumar@aiims.edu",
+    bio: "Dr. Manas Panigrahi is a distinguished neurotrauma surgeon with extensive experience in brain and spinal injury treatment.",
+    // achievements: ["Padma Shri Awardee", "500+ Research Papers", "AI Surgery Pioneer", "Global Innovation Leader"],
+    email: "manas.panigrahi@hospital.edu",
     color: "#ff6b35",
-    stats: { surgeries: "5000+", papers: "500+", awards: "25+" },
+    // stats: { surgeries: "5000+", papers: "500+", awards: "25+" },
   },
   {
     id: 2,
-    name: "Dr. Priya Sharma",
-    title: "Scientific Committee Head",
-    institution: "NIMS Hyderabad",
-    specialty: "Spine Surgery & Robotics",
+    name: "Dr. Raghavendra H",
+    title: "Organising Secretary",
+    // institution: "NIMS Hyderabad",
+    // specialty: "Spine Surgery & Robotics",
     image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Priya Sharma leads the integration of robotics and spine surgery, developing autonomous surgical systems that redefine precision medicine. Her work bridges the gap between human expertise and artificial intelligence.",
-    achievements: ["Robotics Pioneer", "300+ Publications", "Innovation Excellence", "Future Medicine Award"],
-    email: "priya.sharma@nims.edu",
+    bio: "Dr. Raghavendra H is an experienced neurosurgeon specializing in advanced neurotrauma care and surgical techniques.",
+    // achievements: ["Robotics Pioneer", "300+ Publications", "Innovation Excellence", "Future Medicine Award"],
+    email: "raghavendra.h@hospital.edu",
     color: "#ff8c42",
-    stats: { surgeries: "3000+", papers: "300+", awards: "20+" },
+    // stats: { surgeries: "3000+", papers: "300+", awards: "20+" },
   },
   {
     id: 3,
-    name: "Dr. Arun Patel",
-    title: "Technology Integration Lead",
-    institution: "Hyderabad Medical College",
-    specialty: "Sports Medicine & VR Therapy",
+    name: "Dr. Swetha P",
+    title: "Treasurer",
+    // institution: "Hyderabad Medical College",
+    // specialty: "Sports Medicine & VR Therapy",
     image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Arun Patel revolutionizes sports medicine through virtual reality rehabilitation and biometric optimization. His holographic therapy sessions have redefined recovery protocols for elite athletes worldwide.",
-    achievements: ["VR Therapy Creator", "Olympic Innovation", "Biometric Expert", "Future Sports Medicine"],
-    email: "arun.patel@kmc.edu",
+    bio: "Dr. Swetha P is a dedicated medical professional with expertise in neurotrauma management and administrative excellence.",
+    // achievements: ["VR Therapy Creator", "Olympic Innovation", "Biometric Expert", "Future Sports Medicine"],
+    email: "swetha.p@hospital.edu",
     color: "#ffa726",
-    stats: { surgeries: "2500+", papers: "200+", awards: "15+" },
+    // stats: { surgeries: "2500+", papers: "200+", awards: "15+" },
   },
-  {
-    id: 4,
-    name: "Dr. Meera Reddy",
-    title: "Pediatric Innovation Director",
-    institution: "Apollo Hospitals",
-    specialty: "Pediatric Neurotrauma & Gene Therapy",
-    image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Meera Reddy pioneers genetic correction techniques for congenital neurotrauma conditions. Her breakthrough work in CRISPR-based neural regeneration offers hope to millions of children worldwide.",
-    achievements: ["Gene Therapy Pioneer", "CRISPR Innovation", "Pediatric Excellence", "Regenerative Medicine"],
-    email: "meera.reddy@apollo.com",
-    color: "#ff7043",
-    stats: { surgeries: "1500+", papers: "250+", awards: "18+" },
-  },
-  {
-    id: 5,
-    name: "Dr. Vikram Singh",
-    title: "Trauma & Emergency Chief",
-    institution: "PGIMER Chandigarh",
-    specialty: "Emergency Robotics & AI Diagnostics",
-    image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Vikram Singh leads emergency trauma response with AI-powered diagnostic systems and robotic surgical units. His innovations have reduced emergency surgery time by 70% while improving outcomes exponentially.",
-    achievements: ["Emergency AI Pioneer", "Robotic Surgery Leader", "Trauma Innovation", "Life-Saving Technology"],
-    email: "vikram.singh@pgimer.edu",
-    color: "#ff5722",
-    stats: { surgeries: "4000+", papers: "350+", awards: "22+" },
-  },
-  {
-    id: 6,
-    name: "Dr. Kavitha Nair",
-    title: "Oncology & Bioengineering Lead",
-    institution: "CMC Vellore",
-    specialty: "Neurotrauma Oncology & 3D Bioprinting",
-    image: "/placeholder.svg?height=400&width=400",
-    bio: "Dr. Kavitha Nair creates living neural tissue through 3D bioprinting technology. Her revolutionary brain and spinal reconstruction techniques using patient-specific stem cells have eliminated the need for traditional treatments.",
-    achievements: ["3D Bioprinting Pioneer", "Stem Cell Innovation", "Oncology Excellence", "Tissue Engineering"],
-    email: "kavitha.nair@cmc.edu",
-    color: "#e91e63",
-    stats: { surgeries: "2000+", papers: "280+", awards: "16+" },
-  },
+  // {
+  //   id: 4,
+  //   name: "Dr. Meera Reddy",
+  //   title: "Pediatric Innovation Director",
+  //   institution: "Apollo Hospitals",
+  //   specialty: "Pediatric Neurotrauma & Gene Therapy",
+  //   image: "/placeholder.svg?height=400&width=400",
+  //   bio: "Dr. Meera Reddy pioneers genetic correction techniques for congenital neurotrauma conditions. Her breakthrough work in CRISPR-based neural regeneration offers hope to millions of children worldwide.",
+  //   achievements: ["Gene Therapy Pioneer", "CRISPR Innovation", "Pediatric Excellence", "Regenerative Medicine"],
+  //   email: "meera.reddy@apollo.com",
+  //   color: "#ff7043",
+  //   stats: { surgeries: "1500+", papers: "250+", awards: "18+" },
+  // },
+  // {
+  //   id: 5,
+  //   name: "Dr. Vikram Singh",
+  //   title: "Trauma & Emergency Chief",
+  //   institution: "PGIMER Chandigarh",
+  //   specialty: "Emergency Robotics & AI Diagnostics",
+  //   image: "/placeholder.svg?height=400&width=400",
+  //   bio: "Dr. Vikram Singh leads emergency trauma response with AI-powered diagnostic systems and robotic surgical units. His innovations have reduced emergency surgery time by 70% while improving outcomes exponentially.",
+  //   achievements: ["Emergency AI Pioneer", "Robotic Surgery Leader", "Trauma Innovation", "Life-Saving Technology"],
+  //   email: "vikram.singh@pgimer.edu",
+  //   color: "#ff5722",
+  //   stats: { surgeries: "4000+", papers: "350+", awards: "22+" },
+  // },
+  // {
+  //   id: 6,
+  //   name: "Dr. Kavitha Nair",
+  //   title: "Oncology & Bioengineering Lead",
+  //   institution: "CMC Vellore",
+  //   specialty: "Neurotrauma Oncology & 3D Bioprinting",
+  //   image: "/placeholder.svg?height=400&width=400",
+  //   bio: "Dr. Kavitha Nair creates living neural tissue through 3D bioprinting technology. Her revolutionary brain and spinal reconstruction techniques using patient-specific stem cells have eliminated the need for traditional treatments.",
+  //   achievements: ["3D Bioprinting Pioneer", "Stem Cell Innovation", "Oncology Excellence", "Tissue Engineering"],
+  //   email: "kavitha.nair@cmc.edu",
+  //   color: "#e91e63",
+  //   stats: { surgeries: "2000+", papers: "280+", awards: "16+" },
+  // },
 ]
 
 export default function CommitteePage() {
@@ -206,7 +206,7 @@ export default function CommitteePage() {
                       </motion.div>
 
                       {/* Stats Overlay */}
-                      <div className="absolute top-3 md:top-4 right-3 md:right-4 flex space-x-1 md:space-x-2">
+                      {/* <div className="absolute top-3 md:top-4 right-3 md:right-4 flex space-x-1 md:space-x-2">
                         {Object.entries(member.stats).map(([key, value], i) => (
                           <motion.div
                             key={key}
@@ -218,7 +218,7 @@ export default function CommitteePage() {
                             {value}
                           </motion.div>
                         ))}
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Content */}
@@ -228,8 +228,8 @@ export default function CommitteePage() {
                           {member.name}
                         </h3>
                         <p className="text-orange-600 font-semibold mb-1 text-sm md:text-base">{member.title}</p>
-                        <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm mb-2">{member.institution}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{member.specialty}</p>
+                        {/* <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm mb-2">{member.institution}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{member.specialty}</p> */}
                       </div>
 
                       {/* Expandable Bio */}
@@ -246,7 +246,7 @@ export default function CommitteePage() {
                           <p className="text-gray-700 dark:text-gray-200 leading-relaxed mb-3 md:mb-4 text-sm md:text-base">{member.bio}</p>
 
                           {/* Achievements */}
-                          <div className="mb-3 md:mb-4">
+                          {/* <div className="mb-3 md:mb-4">
                             <h4 className="font-semibold mb-2 md:mb-3 flex items-center text-orange-600 text-sm md:text-base">
                               <Award className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                               Key Achievements
@@ -265,7 +265,7 @@ export default function CommitteePage() {
                                 </motion.div>
                               ))}
                             </div>
-                          </div>
+                          </div> */}
 
                           {/* Contact */}
                           <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-orange-100 dark:border-gray-600">

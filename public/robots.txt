@@ -1,0 +1,43 @@
+# Robots.txt for NeuroTrauma 2026 Conference Website
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /private/
+
+# Allow specific API endpoints for registration and contact
+Allow: /api/contact
+Allow: /api/notifications/subscribe
+
+# Sitemap location
+Sitemap: https://neurotrauma2026.in/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
+# Google specific directives
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Crawl-delay: 1
+
+# Bing specific directives  
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Crawl-delay: 1
+
+# Yandex specific directives
+User-agent: Yandex
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Crawl-delay: 2

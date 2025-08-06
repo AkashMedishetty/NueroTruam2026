@@ -5,30 +5,130 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { SessionProvider } from "@/components/providers/SessionProvider"
 import { Toaster } from "@/components/ui/sonner"
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary"
+import { Analytics } from "./analytics"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" })
 
 export const metadata: Metadata = {
-  title: "NEUROTRAUMA CON 2026 - The Future of Neurotrauma Excellence",
-  description:
-    "Revolutionary neurotrauma conference in Hyderabad, Telangana. Where innovation meets precision in the future of medicine.",
-  keywords: "neurotrauma, conference, medical, innovation, surgery, AI, robotics, Hyderabad",
-  authors: [{ name: "Purplehat Tech" }],
-  robots: "index, follow",
+  title: {
+    default: "NeuroTrauma 2026 - Annual Conference of Neurotrauma Society of India",
+    template: "%s | NeuroTrauma 2026"
+  },
+  description: "Join the premier neurotrauma conference in Hyderabad, India from August 7-9, 2026. Advancing Neurotrauma Care & Research through innovation, collaboration, and clinical excellence. Register now for early bird pricing.",
+  keywords: [
+    "neurotrauma",
+    "conference", 
+    "medical conference",
+    "neurosurgery",
+    "brain injury",
+    "spinal injury",
+    "trauma care",
+    "Hyderabad",
+    "India",
+    "medical education",
+    "CME",
+    "neuroscience",
+    "emergency medicine",
+    "rehabilitation",
+    "Neurotrauma Society of India",
+    "NTSI",
+    "2026"
+  ],
+  authors: [
+    { name: "Neurotrauma Society of India" },
+    { name: "Dr. Manas Panigrahi" },
+    { name: "Dr. Raghavendra H" }
+  ],
+  creator: "Neurotrauma Society of India",
+  publisher: "Neurotrauma Society of India",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://neurotrauma2026.in'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-IN': '/en-in',
+      'en-US': '/en-us',
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: '/Favicons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/Favicons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/Favicons/favicon.ico', sizes: 'any' }
+    ],
+    apple: [
+      { url: '/Favicons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/Favicons/favicon.ico',
+        color: '#ff6b35'
+      }
+    ]
+  },
+  manifest: '/Favicons/site.webmanifest',
   openGraph: {
-    title: "NEUROTRAUMA CON 2026 - The Future of Neurotrauma Excellence",
-    description: "Revolutionary neurotrauma conference featuring AI, robotics, and cutting-edge medical innovations.",
-    type: "website",
-    locale: "en_US",
+    type: 'website',
+    locale: 'en_IN',
+    url: 'https://neurotrauma2026.in',
+    siteName: 'NeuroTrauma 2026',
+    title: 'NeuroTrauma 2026 - Annual Conference of Neurotrauma Society of India',
+    description: 'Join the premier neurotrauma conference in Hyderabad, India from August 7-9, 2026. Advancing Neurotrauma Care & Research through innovation and clinical excellence.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'NeuroTrauma 2026 Conference - Hyderabad, India',
+      },
+      {
+        url: '/og-image-square.jpg',
+        width: 1200,
+        height: 1200,
+        alt: 'NeuroTrauma 2026 Conference Logo',
+      }
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "NEUROTRAUMA CON 2026 - The Future of Neurotrauma Excellence",
-    description: "Revolutionary neurotrauma conference featuring AI, robotics, and cutting-edge medical innovations.",
+    card: 'summary_large_image',
+    site: '@NeuroTrauma2026',
+    creator: '@NTSI_India',
+    title: 'NeuroTrauma 2026 - Annual Conference of Neurotrauma Society of India',
+    description: 'Join the premier neurotrauma conference in Hyderabad, India from August 7-9, 2026. Early bird registration now open!',
+    images: ['/og-image.jpg'],
   },
-  generator: 'v0.dev'
+  verification: {
+    google: 'your-google-verification-code',
+    yandex: 'your-yandex-verification-code',
+    yahoo: 'your-yahoo-verification-code',
+  },
+  category: 'Medical Conference',
+  classification: 'Medical Education, Healthcare, Neuroscience',
+  referrer: 'origin-when-cross-origin',
+  bookmarks: ['https://neurotrauma2026.in'],
+  applicationName: 'NeuroTrauma 2026',
+  generator: 'Next.js',
+  abstract: 'Annual Conference of Neurotrauma Society of India focusing on advancing neurotrauma care through research, innovation, and clinical excellence.',
 }
 
 export const viewport = {
@@ -44,18 +144,133 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${orbitron.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Structured Data for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "MedicalEvent",
+              "name": "NeuroTrauma 2026 - Annual Conference of Neurotrauma Society of India",
+              "description": "Premier neurotrauma conference advancing care and research through innovation, collaboration, and clinical excellence in Hyderabad, India.",
+              "startDate": "2026-08-07T09:00:00+05:30",
+              "endDate": "2026-08-09T18:00:00+05:30",
+              "eventStatus": "https://schema.org/EventScheduled",
+              "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+              "location": {
+                "@type": "Place",
+                "name": "Hyderabad, Telangana, India",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Hyderabad",
+                  "addressRegion": "Telangana",
+                  "addressCountry": "IN"
+                }
+              },
+              "organizer": {
+                "@type": "Organization",
+                "name": "Neurotrauma Society of India",
+                "url": "https://neurotrauma2026.in"
+              },
+              "sponsor": [
+                {
+                  "@type": "Organization",
+                  "name": "KIMS Hospitals"
+                },
+                {
+                  "@type": "Organization", 
+                  "name": "Brain and Spine Society"
+                }
+              ],
+              "offers": {
+                "@type": "Offer",
+                "price": "5000",
+                "priceCurrency": "INR",
+                "availability": "https://schema.org/InStock",
+                "validFrom": "2024-01-01T00:00:00+05:30",
+                "url": "https://neurotrauma2026.in/register"
+              },
+              "performer": [
+                {
+                  "@type": "Person",
+                  "name": "Dr. Manas Panigrahi",
+                  "jobTitle": "Organising Chairman"
+                },
+                {
+                  "@type": "Person",
+                  "name": "Dr. Raghavendra H",
+                  "jobTitle": "Organising Secretary"
+                }
+              ],
+              "audience": {
+                "@type": "MedicalAudience",
+                "audienceType": "Medical Professionals, Neurosurgeons, Emergency Physicians, Researchers"
+              },
+              "image": [
+                "https://neurotrauma2026.in/og-image.jpg",
+                "https://neurotrauma2026.in/conference-banner.jpg"
+              ],
+              "url": "https://neurotrauma2026.in",
+              "workFeatured": {
+                "@type": "CreativeWork",
+                "name": "Advancing Neurotrauma Care & Research",
+                "description": "Conference theme focusing on innovation in neurotrauma treatment and research"
+              }
+            })
+          }}
+        />
+        
+        {/* Additional Meta Tags for Enhanced SEO */}
+        <meta name="theme-color" content="#ff6b35" />
+        <meta name="msapplication-TileColor" content="#ff6b35" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        
+        {/* Geo Tags */}
+        <meta name="geo.region" content="IN-TG" />
+        <meta name="geo.placename" content="Hyderabad" />
+        <meta name="geo.position" content="17.3850;78.4867" />
+        <meta name="ICBM" content="17.3850, 78.4867" />
+        
+        {/* Medical Conference Specific Tags */}
+        <meta name="medical.specialty" content="Neurosurgery, Trauma Care, Emergency Medicine" />
+        <meta name="event.date" content="2026-08-07/2026-08-09" />
+        <meta name="event.location" content="Hyderabad, India" />
+        <meta name="conference.registration" content="Open" />
+        <meta name="conference.pricing" content="₹5,000 Early Bird" />
+        
+        {/* Dublin Core Metadata */}
+        <meta name="DC.title" content="NeuroTrauma 2026 - Annual Conference" />
+        <meta name="DC.creator" content="Neurotrauma Society of India" />
+        <meta name="DC.subject" content="Neurotrauma, Medical Conference, Neurosurgery" />
+        <meta name="DC.description" content="Premier neurotrauma conference in Hyderabad, India" />
+        <meta name="DC.publisher" content="Neurotrauma Society of India" />
+        <meta name="DC.date" content="2026-08-07" />
+        <meta name="DC.type" content="Event" />
+        <meta name="DC.format" content="text/html" />
+        <meta name="DC.identifier" content="https://neurotrauma2026.in" />
+        <meta name="DC.language" content="en" />
+        <meta name="DC.coverage" content="Hyderabad, India" />
+        
+        {/* Preconnect for Performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//www.google-analytics.com" />
+        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+      </head>
       <body className={`${inter.className} antialiased`}>
         <GlobalErrorBoundary>
           <SessionProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="system"
+              defaultTheme="light"
               enableSystem
               disableTransitionOnChange={false}
             >
               <div className="relative min-h-screen">
                 {children}
                 <Toaster />
+                <Analytics />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}
               <div className="fixed inset-0 pointer-events-none z-0 opacity-60 dark:opacity-30">

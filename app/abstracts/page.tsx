@@ -33,13 +33,38 @@ export default function AbstractsPage() {
   })
   */
 
-  const handleNotifySubmit = (e: React.FormEvent) => {
+  const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle email submission
-    console.log("Notify email:", email)
-    setIsNotifyOpen(false)
-    setEmail("")
-    setIsSubmitted(true)
+    
+    try {
+      const response = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'abstracts'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsSubmitted(true)
+        setTimeout(() => {
+          setIsNotifyOpen(false)
+          setIsSubmitted(false)
+          setEmail("")
+        }, 2000)
+      } else {
+        console.error('Failed to subscribe:', data.error)
+        alert('Failed to subscribe. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error subscribing to notifications:', error)
+      alert('Failed to subscribe. Please try again.')
+    }
   }
 
   // COMMENTED OUT - Original handlers
