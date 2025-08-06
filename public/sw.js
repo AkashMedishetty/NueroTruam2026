@@ -119,6 +119,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Next.js internal routes (e.g., _next/static, _next/data)
+  if (url.pathname.startsWith('/_next/')) {
+    return;
+  }
+
   // Skip external domains (except images) - Fixed syntax error
   if (url.origin !== location.origin && request.destination !== 'image') {
     return;
