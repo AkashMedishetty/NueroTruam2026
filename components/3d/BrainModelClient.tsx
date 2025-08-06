@@ -6,6 +6,9 @@ import { OrbitControls, Float, useGLTF } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
+// Preload the brain model
+useGLTF.preload('/brain_model.glb')
+
 // Optimized Particle Sphere with reduced particle count
 function ParticleSphere() {
   const particlesRef = useRef<THREE.Group>(null)
@@ -64,23 +67,12 @@ function BrainModel() {
   const meshRef = useRef<THREE.Group>(null)
   let scene: THREE.Group | null = null
   
-  // Detect mobile device for performance optimization
-  const isMobile = typeof window !== 'undefined' && (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    window.innerWidth < 768 ||
-    (typeof navigator !== 'undefined' && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
-  )
-  
-  // Only load heavy 3D model on desktop/high-performance devices
-  if (!isMobile) {
-    try {
-      const gltf = useGLTF('/brain_model.glb')
-      scene = gltf.scene
-    } catch (error) {
-      console.log('Brain model not found, using fallback')
-    }
-  } else {
-    console.log('Mobile device detected, using optimized fallback model')
+  // Load 3D model for all devices
+  try {
+    const gltf = useGLTF('/brain_model.glb')
+    scene = gltf.scene
+  } catch (error) {
+    console.log('Brain model not found, using fallback')
   }
 
   useFrame((state) => {

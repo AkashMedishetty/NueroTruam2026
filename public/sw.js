@@ -104,6 +104,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip blob URLs (causes NetworkError in Cache.put())
+  if (url.protocol === 'blob:') {
+    return;
+  }
+
+  // Skip data URLs
+  if (url.protocol === 'data:') {
+    return;
+  }
+
+  // Skip chrome-extension URLs
+  if (url.protocol === 'chrome-extension:') {
+    return;
+  }
+
   // Skip API routes (let them hit the network)
   if (url.pathname.startsWith('/api/')) {
     return;

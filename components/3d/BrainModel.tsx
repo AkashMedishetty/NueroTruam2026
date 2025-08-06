@@ -5,8 +5,13 @@ import { Suspense } from 'react'
 import { ModelErrorBoundary } from './ModelErrorBoundary'
 import { ModelSkeleton } from './ModelSkeleton'
 
-// Lazy load the 3D component to prevent SSR issues
+// Lazy load components
 const BrainModelClient = dynamic(() => import('./BrainModelClient'), {
+  ssr: false,
+  loading: () => <ModelSkeleton />
+})
+
+const MobileBrainFallback = dynamic(() => import('./MobileBrainFallback'), {
   ssr: false,
   loading: () => <ModelSkeleton />
 })

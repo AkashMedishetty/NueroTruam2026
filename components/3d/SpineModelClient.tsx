@@ -5,28 +5,20 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
+// Preload the spine model
+useGLTF.preload('/spine_model.glb')
+
 // Spine Model with mobile optimization and proper error handling
 function SpineModel() {
   const spineRef = useRef<THREE.Group>(null)
   let spineScene: THREE.Group | null = null
   
-  // Detect mobile device for performance optimization
-  const isMobile = typeof window !== 'undefined' && (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    window.innerWidth < 768 ||
-    (typeof navigator !== 'undefined' && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
-  )
-  
-  // Only load heavy 3D model on desktop/high-performance devices
-  if (!isMobile) {
-    try {
-      const gltf = useGLTF('/spine_model.glb')
-      spineScene = gltf.scene
-    } catch (error) {
-      console.log('Spine GLB not found, using fallback spine')
-    }
-  } else {
-    console.log('Mobile device detected, using optimized spine fallback')
+  // Load 3D model for all devices
+  try {
+    const gltf = useGLTF('/spine_model.glb')
+    spineScene = gltf.scene
+  } catch (error) {
+    console.log('Spine GLB not found, using fallback spine')
   }
 
   useFrame((state) => {

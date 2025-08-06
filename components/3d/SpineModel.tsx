@@ -17,20 +17,10 @@ const MobileSpineFallback = dynamic(() => import('./MobileSpineFallback'), {
 })
 
 export default function SpineModel() {
-  // Mobile detection
-  const isMobile = typeof window !== 'undefined' && (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    window.innerWidth < 768
-  )
-
   return (
     <ModelErrorBoundary>
       <Suspense fallback={<ModelSkeleton />}>
-        {isMobile ? (
-          <MobileSpineFallback />
-        ) : (
-          <SpineModelClient />
-        )}
+        <SpineModelClient />
       </Suspense>
     </ModelErrorBoundary>
   )

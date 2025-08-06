@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 
 export default function MobileSpineFallback() {
   return (
-    <div className="w-full h-[750px] rounded-2xl bg-gradient-to-br from-orange-50 to-white dark:from-gray-800 dark:to-gray-900 flex items-center justify-center overflow-hidden relative">
+    <div className="mobile-fallback w-full h-[750px] rounded-2xl bg-gradient-to-br from-orange-50 to-white dark:from-gray-800 dark:to-gray-900 flex items-center justify-center overflow-hidden relative">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-orange-300 animate-pulse"></div>

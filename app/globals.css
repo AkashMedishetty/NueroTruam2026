@@ -149,12 +149,12 @@ html {
     transition-duration: 0.01ms !important;
   }
   
-  /* Disable 3D model animations for reduced motion */
-  .three-canvas-container {
+  /* Disable 3D model animations for reduced motion, but allow mobile fallbacks */
+  .three-canvas-container canvas {
     display: none;
   }
   
-  .three-canvas-container::after {
+  .three-canvas-container:not(:has(.mobile-fallback))::after {
     content: "3D model disabled for reduced motion";
     display: flex;
     align-items: center;
@@ -163,6 +163,11 @@ html {
     background: hsl(var(--muted));
     color: hsl(var(--muted-foreground));
     border-radius: 1.5rem;
+  }
+  
+  /* Allow mobile fallback components to show even with reduced motion */
+  .three-canvas-container .mobile-fallback {
+    display: block !important;
   }
 }
 
@@ -456,18 +461,23 @@ canvas {
     overflow: hidden;
   }
   
-  /* Reduce 3D model interaction sensitivity on mobile */
+  /* Enable 3D model interaction on mobile */
   canvas {
     pointer-events: auto;
     touch-action: pan-y pinch-zoom;
   }
   
-  /* Make 3D models less intrusive on mobile scrolling */
+  /* Ensure 3D models are interactive on mobile */
   .mobile-3d-model {
-    pointer-events: none;
+    pointer-events: auto;
   }
   
-  .mobile-3d-model:hover {
+  .mobile-3d-model canvas {
+    pointer-events: auto;
+  }
+  
+  /* Ensure mobile fallback components are interactive */
+  .mobile-3d-model .mobile-fallback {
     pointer-events: auto;
   }
 }
