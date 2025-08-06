@@ -103,8 +103,10 @@ export const authOptions: NextAuthOptions = {
                 secure: process.env.NODE_ENV === 'production',
                 // CRITICAL FIX: Don't set domain to prevent cross-device session sharing
                 domain: undefined,
-                // Add session isolation with unique identifiers
-                maxAge: 30 * 24 * 60 * 60 // 30 days
+                // Enhanced session isolation with shorter max age to prevent conflicts
+                maxAge: 7 * 24 * 60 * 60, // 7 days (reduced from 30 to prevent long-lived conflicts)
+                // Add priority to ensure correct cookie is used
+                priority: 'high'
             }
         },
         callbackUrl: {
@@ -114,7 +116,8 @@ export const authOptions: NextAuthOptions = {
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                domain: undefined
+                domain: undefined,
+                maxAge: 60 * 60 // 1 hour for callback URLs
             }
         },
         csrfToken: {
@@ -124,7 +127,8 @@ export const authOptions: NextAuthOptions = {
                 sameSite: 'lax',
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
-                domain: undefined
+                domain: undefined,
+                maxAge: 60 * 60 // 1 hour for CSRF tokens
             }
         }
     },
@@ -185,13 +189,16 @@ export const authOptions: NextAuthOptions = {
                     session.loginTime = token.loginTime as number
                     session.lastValidated = Date.now()
                     
-                    console.log('🔐 Session from JWT with device isolation:', {
-                        userId: session.user.id,
-                        email: session.user.email,
-                        sessionId: session.sessionId,
-                        deviceId: session.deviceId,
-                        timestamp: new Date().toISOString()
-                    })
+                    // Reduce logging frequency in production to prevent spam
+                    if (process.env.NODE_ENV === 'development' || Math.random() < 0.1) {
+                        console.log('🔐 Session from JWT with device isolation:', {
+                            userId: session.user.id,
+                            email: session.user.email,
+                            sessionId: session.sessionId,
+                            deviceId: session.deviceId,
+                            timestamp: new Date().toISOString()
+                        })
+                    }
                 }
                 return session
             } catch (error) {
@@ -210,6 +217,7 @@ export const authOptions: NextAuthOptions = {
                     console.log('✅ JWT session sign-in successful (with device isolation):', {
                         userId: user.id,
                         email: user.email,
+                        provider: account.provider,
                         timestamp: new Date().toISOString()
                     })
                     return true

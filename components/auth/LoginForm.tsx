@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { redirectGuard } from "@/lib/utils/redirect-guard";
+
 
 interface LoginFormProps {
   callbackUrl?: string;
@@ -50,50 +50,28 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
 
       if (result?.error) {
         setError("Invalid email or password");
+
+        // Simple error logging
+        console.error('Login failed:', result.error);
+
         toast({
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
         });
       } else {
+        // Simple success logging
+        console.log('Login successful');
+
         toast({
           title: "Login Successful",
           description: "Welcome back! Redirecting to your dashboard...",
         });
 
-        // Force session refresh and redirect
-        setTimeout(async () => {
-          try {
-            // Refresh the router to update session
-            router.refresh();
-            
-            // Use the redirect guard before redirecting
-            if (redirectGuard.canRedirect(callbackUrl, "LoginForm-success")) {
-              redirectGuard.clearAll();
-              // Use window.location.href for production to ensure proper redirect
-              if (process.env.NODE_ENV === 'production') {
-                window.location.href = callbackUrl;
-              } else {
-                router.push(callbackUrl);
-              }
-            } else {
-              toast({
-                title: "Redirect Blocked",
-                description: "Login redirect blocked to prevent loop. Taking you to dashboard.",
-                variant: "destructive",
-              });
-              if (process.env.NODE_ENV === 'production') {
-                window.location.href = "/dashboard";
-              } else {
-                router.push("/dashboard");
-              }
-            }
-          } catch (redirectError) {
-            console.error('Redirect error:', redirectError);
-            // Fallback redirect
-            window.location.href = "/dashboard";
-          }
-        }, 1000); // Increased delay for session propagation in production
+        // Simple, fast redirect
+        setTimeout(() => {
+          router.push(callbackUrl);
+        }, 100);
       }
     } catch (error) {
       setError("An unexpected error occurred");

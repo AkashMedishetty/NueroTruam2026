@@ -4,8 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState, useRef, ReactNode } from "react"
 import { Loader2 } from "lucide-react"
-import { redirectGuard } from "@/lib/utils/redirect-guard"
-import { useStableSession } from "./SessionStabilizer"
+
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -13,136 +12,65 @@ interface ProtectedRouteProps {
   fallbackUrl?: string
 }
 
-export function ProtectedRoute({ 
-  children, 
+export function ProtectedRoute({
+  children,
   requiredRole = "user",
   fallbackUrl = "/auth/login"
 }: ProtectedRouteProps) {
-  const { session, status, isStable, isLoading } = useStableSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
   const [isRedirecting, setIsRedirecting] = useState(false)
-  const redirectAttempted = useRef(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    // Don't process if loading, not stable, or already redirecting
-    if (isLoading || !isStable || isRedirecting) return
-
-    // Reset redirect flag when session status changes
-    if (status === "authenticated") {
-      redirectAttempted.current = false
-      setIsRedirecting(false)
-      redirectGuard.clearAll() // Clear redirect history on successful auth
-      console.log('✅ ProtectedRoute: Session authenticated', {
-        user: session?.user?.email,
-        role: session?.user?.role,
-        pathname
-      })
-    }
-
-    // Add production-specific session debugging
-    if (process.env.NODE_ENV === 'production') {
-      console.log('🔍 ProtectedRoute production debug:', {
-        status,
-        hasSession: !!session,
-        pathname,
-        isRedirecting,
-        redirectAttempted: redirectAttempted.current
-      })
-    }
-
-    const handleRedirect = (targetUrl: string, context: string) => {
-      if (redirectAttempted.current || isRedirecting) {
-        console.warn(`Redirect already in progress to ${targetUrl}`)
-        return
-      }
-
-      if (redirectGuard.canRedirect(targetUrl, context)) {
-        console.log(`🔄 ProtectedRoute redirecting to: ${targetUrl}`)
-        redirectAttempted.current = true
-        setIsRedirecting(true)
-        
-        // Set a timeout to reset the redirect state in case of issues
-        timeoutRef.current = setTimeout(() => {
-          console.warn('Redirect timeout - resetting state')
-          setIsRedirecting(false)
-          redirectAttempted.current = false
-        }, 5000)
-        
-        router.push(targetUrl)
-      } else {
-        console.error(`Redirect blocked to prevent loop: ${targetUrl}`)
-        setIsRedirecting(false)
-      }
-    }
+    // Simple, fast authentication check
+    if (status === "loading") return
 
     if (status === "unauthenticated") {
-      // Only redirect if session is stable and we're sure it's unauthenticated
-      if (isStable && !redirectAttempted.current) {
+      if (!isRedirecting) {
+        setIsRedirecting(true)
         const returnUrl = encodeURIComponent(pathname)
         const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
-        handleRedirect(loginUrl, "ProtectedRoute-unauthenticated-stable")
+        router.push(loginUrl)
       }
       return
     }
 
     if (session?.user) {
-      // Check role-based access
+      // Quick role check
       const userRole = session.user.role || "user"
-      
+
       if (requiredRole === "admin" && userRole !== "admin") {
-        handleRedirect("/dashboard", "ProtectedRoute-admin-denied")
+        router.push("/dashboard")
         return
       }
-      
+
       if (requiredRole === "reviewer" && !["admin", "reviewer"].includes(userRole)) {
-        handleRedirect("/dashboard", "ProtectedRoute-reviewer-denied")
+        router.push("/dashboard")
         return
       }
     }
   }, [session, status, router, pathname, requiredRole, fallbackUrl, isRedirecting])
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
-
-  // Show loading while checking authentication or stabilizing
-  if (isLoading) {
+  // Simple loading state - no blocking screens
+  if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
-          <p className="text-gray-600">
-            {!isStable ? "Stabilizing session..." : "Loading authentication..."}
-          </p>
+      <div className="fixed top-4 right-4 z-50">
+        <div className="bg-white rounded-lg shadow-lg p-3 flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+          <span className="text-sm text-gray-600">Loading...</span>
         </div>
       </div>
     )
   }
 
-  // Show loading while redirecting
-  if (isRedirecting || status === "unauthenticated") {
+  // Don't block content while redirecting
+  if (status === "unauthenticated" || isRedirecting) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
-          <p className="text-gray-600">
-            {isRedirecting ? "Redirecting..." : "Redirecting to login..."}
-          </p>
-          <p className="text-sm text-gray-500">
-            If this takes too long, please refresh the page
-          </p>
+      <div className="fixed top-4 right-4 z-50">
+        <div className="bg-white rounded-lg shadow-lg p-3 flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+          <span className="text-sm text-gray-600">Redirecting...</span>
         </div>
       </div>
     )
@@ -151,7 +79,7 @@ export function ProtectedRoute({
   // Check role access
   if (session?.user) {
     const userRole = session.user.role || "user"
-    
+
     if (requiredRole === "admin" && userRole !== "admin") {
       return (
         <div className="min-h-screen flex items-center justify-center">
@@ -162,7 +90,7 @@ export function ProtectedRoute({
         </div>
       )
     }
-    
+
     if (requiredRole === "reviewer" && !["admin", "reviewer"].includes(userRole)) {
       return (
         <div className="min-h-screen flex items-center justify-center">

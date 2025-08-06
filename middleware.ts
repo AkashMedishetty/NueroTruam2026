@@ -58,40 +58,62 @@ export async function middleware(request: NextRequest) {
   )
   
   if (isProtectedPath) {
-    // Prevent redirect loops - if coming from login, don't redirect back
+    // Enhanced redirect loop prevention
     const referer = request.headers.get('referer')
     const isFromLogin = referer?.includes('/auth/login')
+    const isFromDashboard = referer?.includes('/dashboard')
     
-    // For database sessions, we'll let NextAuth handle session validation
-    // The middleware will only handle basic route protection
-    const sessionCookie = request.cookies.get(
-      process.env.NODE_ENV === 'production' 
-        ? '__Secure-next-auth.session-token' 
-        : 'next-auth.session-token'
-    )
+    // Check for both development and production session cookies to handle conflicts
+    const devSessionCookie = request.cookies.get('next-auth.session-token')
+    const prodSessionCookie = request.cookies.get('__Secure-next-auth.session-token')
+    const hasAnySessionCookie = !!(devSessionCookie || prodSessionCookie)
     
-    console.log(`🔍 Middleware session check for ${request.nextUrl.pathname}:`, {
-      hasSessionCookie: !!sessionCookie,
-      isFromLogin,
-      userAgent: request.headers.get('user-agent')?.substring(0, 50),
-      cookies: request.cookies.getAll().map(c => c.name)
-    })
+    // Get the correct session cookie for current environment
+    const sessionCookie = process.env.NODE_ENV === 'production' ? prodSessionCookie : devSessionCookie
     
-    if (!sessionCookie && !isFromLogin) {
-      // Redirect to login for protected routes (only if not coming from login)
-      const loginUrl = new URL('/auth/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname)
-      console.log(`🔄 Middleware redirecting to login: ${request.nextUrl.pathname}`)
-      return NextResponse.redirect(loginUrl)
-    } else if (!sessionCookie && isFromLogin) {
-      // If no session cookie and coming from login, allow a brief grace period
-      console.warn('🚫 No session cookie found but coming from login - allowing access')
-      // Don't block immediately, let the page handle authentication
+    // Minimal logging for performance
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Middleware: ${request.nextUrl.pathname} - Session: ${!!sessionCookie}`)
+    }
+    
+    // Simple redirect loop prevention
+    const refererPath = referer ? new URL(referer).pathname : ''
+    if (refererPath === request.nextUrl.pathname) {
+      // Prevent immediate redirect loops
       return response
     }
     
+    if (!sessionCookie && !isFromLogin && !isFromDashboard) {
+      // Only redirect to login if we have no session and aren't coming from auth pages
+      const loginUrl = new URL('/auth/login', request.url)
+      loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname)
+      
+      return NextResponse.redirect(loginUrl)
+    } else if (!sessionCookie && (isFromLogin || isFromDashboard)) {
+      // If no session cookie but coming from auth pages, allow brief grace period
+      console.warn('🚫 No session cookie found but coming from auth page - allowing access with grace period')
+      return response
+    } else if (hasAnySessionCookie && !sessionCookie) {
+      // Handle cookie conflicts - clear conflicting cookies
+      console.warn('🔧 Cookie conflict detected, clearing conflicting session cookies')
+      const cleanupResponse = NextResponse.next()
+      
+      // Clear the wrong environment's cookies
+      if (process.env.NODE_ENV === 'production' && devSessionCookie) {
+        cleanupResponse.cookies.delete('next-auth.session-token')
+        cleanupResponse.cookies.delete('next-auth.callback-url')
+        cleanupResponse.cookies.delete('next-auth.csrf-token')
+      } else if (process.env.NODE_ENV !== 'production' && prodSessionCookie) {
+        cleanupResponse.cookies.delete('__Secure-next-auth.session-token')
+        cleanupResponse.cookies.delete('__Secure-next-auth.callback-url')
+        cleanupResponse.cookies.delete('__Host-next-auth.csrf-token')
+      }
+      
+      return cleanupResponse
+    }
+    
     // For admin routes, we'll let the page components handle role checking
-    // since we can't easily decode the session token in middleware with database sessions
+    // since we can't easily decode the session token in middleware with JWT sessions
   }
   
   // Handle auth routes when already logged in
@@ -101,24 +123,48 @@ export async function middleware(request: NextRequest) {
   )
   
   if (isAuthPath) {
-    // Prevent redirect loops - if coming from dashboard, don't redirect back
+    // Enhanced redirect loop prevention for auth pages
     const referer = request.headers.get('referer')
     const isFromDashboard = referer?.includes('/dashboard')
+    const isFromLogin = referer?.includes('/auth/login')
     
-    // Check for session cookie
-    const sessionCookie = request.cookies.get(
-      process.env.NODE_ENV === 'production' 
-        ? '__Secure-next-auth.session-token' 
-        : 'next-auth.session-token'
-    )
+    // Check for both development and production session cookies
+    const devSessionCookie = request.cookies.get('next-auth.session-token')
+    const prodSessionCookie = request.cookies.get('__Secure-next-auth.session-token')
+    const sessionCookie = process.env.NODE_ENV === 'production' ? prodSessionCookie : devSessionCookie
     
-    if (sessionCookie && !isFromDashboard) {
-      // Redirect to dashboard if already logged in (only if not coming from dashboard)
+    // Simple auth page redirect prevention
+    if (isFromDashboard && sessionCookie) {
+      // Allow access to login from dashboard (user might want to switch accounts)
+      return response
+    }
+    
+    if (sessionCookie && !isFromDashboard && !isFromLogin) {
+      // Only redirect to dashboard if we have a session and aren't coming from dashboard/login
       console.log(`🔄 Middleware redirecting authenticated user to dashboard from login`)
+      
       return NextResponse.redirect(new URL('/dashboard', request.url))
-    } else if (sessionCookie && isFromDashboard) {
-      // If authenticated and coming from dashboard, allow login page (user might want to switch accounts)
-      console.log('ℹ️ Allowing authenticated user to access login (from dashboard)')
+    } else if (sessionCookie && (isFromDashboard || isFromLogin)) {
+      // If authenticated and coming from dashboard/login, allow login page access
+      console.log('ℹ️ Allowing authenticated user to access login (from dashboard/login)')
+    }
+    
+    // Handle cookie conflicts on login page too
+    if ((devSessionCookie || prodSessionCookie) && !sessionCookie) {
+      console.warn('🔧 Cookie conflict on login page, cleaning up')
+      const cleanupResponse = NextResponse.next()
+      
+      if (process.env.NODE_ENV === 'production' && devSessionCookie) {
+        cleanupResponse.cookies.delete('next-auth.session-token')
+        cleanupResponse.cookies.delete('next-auth.callback-url')
+        cleanupResponse.cookies.delete('next-auth.csrf-token')
+      } else if (process.env.NODE_ENV !== 'production' && prodSessionCookie) {
+        cleanupResponse.cookies.delete('__Secure-next-auth.session-token')
+        cleanupResponse.cookies.delete('__Secure-next-auth.callback-url')
+        cleanupResponse.cookies.delete('__Host-next-auth.csrf-token')
+      }
+      
+      return cleanupResponse
     }
   }
   
