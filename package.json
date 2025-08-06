@@ -12,7 +12,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "monitor": "node scripts/monitor-capacity.js",
+    "monitor:background": "pm2 start scripts/monitor-capacity.js --name capacity-monitor"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.10.0",

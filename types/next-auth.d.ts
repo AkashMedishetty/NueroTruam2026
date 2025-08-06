@@ -10,6 +10,8 @@ declare module 'next-auth' {
       registrationId: string
       registrationStatus: string
     }
+    deviceId: string
+    loginTime: number
   }
 
   interface User {
@@ -27,5 +29,7 @@ declare module 'next-auth/jwt' {
     role: string
     registrationId: string
     registrationStatus: string
+    deviceId: string
+    loginTime: number
   }
 }

@@ -2,8 +2,9 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
-import { useEffect, ReactNode } from "react"
+import { useEffect, useState, useRef, ReactNode } from "react"
 import { Loader2 } from "lucide-react"
+import { redirectGuard } from "@/lib/utils/redirect-guard"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -19,14 +20,56 @@ export function ProtectedRoute({
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const redirectAttempted = useRef(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (status === "loading") return // Still loading
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    // Don't process if loading or already redirecting
+    if (status === "loading" || isRedirecting) return
+
+    // Reset redirect flag when session status changes
+    if (status === "authenticated") {
+      redirectAttempted.current = false
+      setIsRedirecting(false)
+      redirectGuard.clearAll() // Clear redirect history on successful auth
+    }
+
+    const handleRedirect = (targetUrl: string, context: string) => {
+      if (redirectAttempted.current || isRedirecting) {
+        console.warn(`Redirect already in progress to ${targetUrl}`)
+        return
+      }
+
+      if (redirectGuard.canRedirect(targetUrl, context)) {
+        console.log(`🔄 ProtectedRoute redirecting to: ${targetUrl}`)
+        redirectAttempted.current = true
+        setIsRedirecting(true)
+        
+        // Set a timeout to reset the redirect state in case of issues
+        timeoutRef.current = setTimeout(() => {
+          console.warn('Redirect timeout - resetting state')
+          setIsRedirecting(false)
+          redirectAttempted.current = false
+        }, 5000)
+        
+        router.push(targetUrl)
+      } else {
+        console.error(`Redirect blocked to prevent loop: ${targetUrl}`)
+        setIsRedirecting(false)
+      }
+    }
 
     if (status === "unauthenticated") {
       // Redirect to login with return URL
       const returnUrl = encodeURIComponent(pathname)
-      router.push(`${fallbackUrl}?callbackUrl=${returnUrl}`)
+      const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
+      handleRedirect(loginUrl, "ProtectedRoute-unauthenticated")
       return
     }
 
@@ -35,16 +78,25 @@ export function ProtectedRoute({
       const userRole = session.user.role || "user"
       
       if (requiredRole === "admin" && userRole !== "admin") {
-        router.push("/dashboard") // Redirect non-admin users to dashboard
+        handleRedirect("/dashboard", "ProtectedRoute-admin-denied")
         return
       }
       
       if (requiredRole === "reviewer" && !["admin", "reviewer"].includes(userRole)) {
-        router.push("/dashboard") // Redirect non-reviewers to dashboard
+        handleRedirect("/dashboard", "ProtectedRoute-reviewer-denied")
         return
       }
     }
-  }, [session, status, router, pathname, requiredRole, fallbackUrl])
+  }, [session, status, router, pathname, requiredRole, fallbackUrl, isRedirecting])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   // Show loading while checking authentication
   if (status === "loading") {
@@ -52,19 +104,24 @@ export function ProtectedRoute({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading authentication...</p>
         </div>
       </div>
     )
   }
 
-  // Show loading while redirecting unauthenticated users
-  if (status === "unauthenticated") {
+  // Show loading while redirecting
+  if (isRedirecting || status === "unauthenticated") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
-          <p className="text-gray-600">Redirecting to login...</p>
+          <p className="text-gray-600">
+            {isRedirecting ? "Redirecting..." : "Redirecting to login..."}
+          </p>
+          <p className="text-sm text-gray-500">
+            If this takes too long, please refresh the page
+          </p>
         </div>
       </div>
     )

@@ -8,6 +8,8 @@ import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary"
 import { Analytics } from "./analytics"
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
 import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate"
+import { DeviceSessionManager } from "@/components/auth/DeviceSessionManager"
+import { RedirectLoopHandler } from "@/components/auth/RedirectLoopHandler"
 import "./globals.css"
 
 const inter = Inter({ 
@@ -292,19 +294,21 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <GlobalErrorBoundary>
-          <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange={false}
-            >
-              <div className="relative min-h-screen">
-                {children}
-                <Toaster />
-                <Analytics />
-                <PWAInstallPrompt />
-                <ServiceWorkerUpdate />
+                    <SessionProvider>
+            <DeviceSessionManager>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange={false}
+              >
+                <div className="relative min-h-screen">
+                  {children}
+                  <Toaster />
+                  <Analytics />
+                  <PWAInstallPrompt />
+                  <ServiceWorkerUpdate />
+                  <RedirectLoopHandler />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}
               <div className="fixed inset-0 pointer-events-none z-0 opacity-60 dark:opacity-30">
@@ -317,8 +321,9 @@ export default function RootLayout({
                 <div className="particle animate-pulse" style={{ left: '70%', top: '30%', width: '2px', height: '2px', background: 'hsl(35, 70%, 60%)', animationDelay: '6s', animationDuration: '13s' }} />
                 <div className="particle animate-pulse" style={{ left: '50%', top: '90%', width: '3px', height: '3px', background: 'hsl(20, 70%, 60%)', animationDelay: '2s', animationDuration: '8s' }} />
               </div>
-            </div>
-          </ThemeProvider>
+                </div>
+              </ThemeProvider>
+            </DeviceSessionManager>
           </SessionProvider>
         </GlobalErrorBoundary>
       </body>

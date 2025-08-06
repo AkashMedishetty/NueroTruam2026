@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { redirectGuard } from "@/lib/utils/redirect-guard"
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -59,8 +60,20 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           title: "Login Successful",
           description: "Welcome back! Redirecting to your dashboard...",
         })
-        // Use window.location to ensure proper navigation
-        window.location.href = callbackUrl
+        // Use redirect guard to prevent loops
+        if (redirectGuard.canRedirect(callbackUrl, 'LoginForm-success')) {
+          // Clear any existing redirect history on successful login
+          redirectGuard.clearAll()
+          
+          // Small delay to ensure session is fully established
+          setTimeout(() => {
+            window.location.href = callbackUrl
+          }, 100)
+        } else {
+          console.warn('Login redirect blocked to prevent loop')
+          // Fallback to dashboard if callback URL is problematic
+          window.location.href = '/dashboard'
+        }
       }
     } catch (error) {
       setError("An unexpected error occurred")

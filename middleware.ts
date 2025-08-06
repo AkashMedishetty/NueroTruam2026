@@ -59,20 +59,32 @@ export async function middleware(request: NextRequest) {
   )
   
   if (isProtectedPath) {
+    // Prevent redirect loops - if coming from login, don't redirect back
+    const referer = request.headers.get('referer')
+    const isFromLogin = referer?.includes('/auth/login')
+    
     const token = await getToken({ 
       req: request,
       secret: process.env.NEXTAUTH_SECRET 
     })
     
-    if (!token) {
-      // Redirect to login for protected routes
+    if (!token && !isFromLogin) {
+      // Redirect to login for protected routes (only if not coming from login)
       const loginUrl = new URL('/auth/login', request.url)
       loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname)
+      console.log(`🔄 Middleware redirecting to login: ${request.nextUrl.pathname}`)
       return NextResponse.redirect(loginUrl)
+    } else if (!token && isFromLogin) {
+      // If no token and coming from login, show error page instead of redirect
+      console.warn('🚫 Potential login loop detected - blocking redirect')
+      return new NextResponse('Authentication required', { 
+        status: 401,
+        headers: { 'Content-Type': 'text/html' }
+      })
     }
     
     // Check admin routes
-    if (request.nextUrl.pathname.startsWith('/admin') && token.role !== 'admin') {
+    if (token && request.nextUrl.pathname.startsWith('/admin') && token.role !== 'admin') {
       return new NextResponse('Access denied', { status: 403 })
     }
   }
@@ -84,14 +96,22 @@ export async function middleware(request: NextRequest) {
   )
   
   if (isAuthPath) {
+    // Prevent redirect loops - if coming from dashboard, don't redirect back
+    const referer = request.headers.get('referer')
+    const isFromDashboard = referer?.includes('/dashboard')
+    
     const token = await getToken({ 
       req: request,
       secret: process.env.NEXTAUTH_SECRET 
     })
     
-    if (token) {
-      // Redirect to dashboard if already logged in
+    if (token && !isFromDashboard) {
+      // Redirect to dashboard if already logged in (only if not coming from dashboard)
+      console.log(`🔄 Middleware redirecting authenticated user to dashboard from login`)
       return NextResponse.redirect(new URL('/dashboard', request.url))
+    } else if (token && isFromDashboard) {
+      // If authenticated and coming from dashboard, allow login page (user might want to switch accounts)
+      console.log('ℹ️ Allowing authenticated user to access login (from dashboard)')
     }
   }
   
