@@ -10,7 +10,12 @@ const nextConfig = {
       '@react-three/fiber',
       '@react-three/drei',
       'date-fns',
-      'recharts'
+      'recharts',
+      'three',
+      '@types/three',
+      'react-hook-form',
+      '@hookform/resolvers',
+      'zod'
     ],
     // External packages for server components (don't bundle these)
     serverComponentsExternalPackages: [
@@ -20,6 +25,47 @@ const nextConfig = {
       'sharp',
       'canvas'
     ],
+    // Enable webpack build cache for faster builds
+    webpackBuildWorker: true,
+  },
+
+  // Advanced webpack optimizations
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Only apply optimizations in production
+    if (!dev) {
+      // Optimize bundle size
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // Separate vendor chunk for better caching
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              chunks: 'all',
+            },
+            // Separate Three.js chunk as it's heavy
+            three: {
+              test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
+              name: 'three',
+              priority: 20,
+              chunks: 'all',
+            },
+            // Separate UI components chunk
+            ui: {
+              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion)[\\/]/,
+              name: 'ui',
+              priority: 15,
+              chunks: 'all',
+            },
+          },
+        },
+      }
+    }
+
+    return config
   },
 
   // Image optimization
@@ -84,7 +130,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://api.razorpay.com https://*.razorpay.com;"
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.googletagmanager.com blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://api.razorpay.com https://*.razorpay.com;"
           }
         ]
       },

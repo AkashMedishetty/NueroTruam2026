@@ -3,12 +3,15 @@ const CACHE_NAME = 'neurotrauma-2026-v1';
 const STATIC_CACHE_NAME = 'neurotrauma-2026-static-v1';
 const DYNAMIC_CACHE_NAME = 'neurotrauma-2026-dynamic-v1';
 
-// Static assets to cache immediately
+// Static assets to cache immediately (only essential ones)
 const STATIC_ASSETS = [
   '/',
-  '/manifest.json',
-  '/Favicons/favicon-192x192.png',
-  '/Favicons/favicon-512x512.png',
+  '/offline.html',
+];
+
+// Optional assets to cache (don't fail if they don't exist)
+const OPTIONAL_ASSETS = [
+  '/Favicons/site.webmanifest',
   '/NTSILOGO.png',
   '/brainandspinesociety.png',
   '/KIMS.png',
@@ -17,17 +20,55 @@ const STATIC_ASSETS = [
 // Dynamic assets to cache on demand
 const DYNAMIC_CACHE_LIMIT = 50;
 
+// Helper function to cache assets with error handling
+async function cacheAssets(cache, assets, optional = false) {
+  const results = await Promise.allSettled(
+    assets.map(asset => 
+      fetch(asset)
+        .then(response => {
+          if (response.ok) {
+            return cache.put(asset, response);
+          } else if (!optional) {
+            throw new Error(`Failed to fetch ${asset}: ${response.status}`);
+          }
+        })
+        .catch(error => {
+          if (!optional) {
+            console.error(`Failed to cache ${asset}:`, error);
+            throw error;
+          } else {
+            console.warn(`Optional asset failed to cache: ${asset}`);
+          }
+        })
+    )
+  );
+  
+  if (!optional) {
+    const failures = results.filter(result => result.status === 'rejected');
+    if (failures.length > 0) {
+      throw new Error(`Failed to cache ${failures.length} essential assets`);
+    }
+  }
+}
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
-      .then((cache) => {
-        console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+      .then(async (cache) => {
+        console.log('Caching essential assets');
+        await cacheAssets(cache, STATIC_ASSETS, false);
+        
+        console.log('Caching optional assets');
+        await cacheAssets(cache, OPTIONAL_ASSETS, true);
       })
       .then(() => {
+        console.log('Service Worker installed successfully');
         return self.skipWaiting();
+      })
+      .catch(error => {
+        console.error('Service Worker installation failed:', error);
       })
   );
 });

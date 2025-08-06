@@ -309,28 +309,29 @@ export default function RegisterPage() {
 
   const validateStep = (currentStep: number) => {
     console.log(`Validating step ${currentStep}...`)
-    console.log('Current form data:', formData)
     switch (currentStep) {
       case 1:
-        console.log('Step 1 validation - checking required fields...')
-        if (!formData.title || !formData.firstName || !formData.lastName || 
-            !formData.email || !formData.phone || !formData.designation || !formData.password || 
-            !formData.confirmPassword || !formData.institution || formData.institution.trim() === '') {
-          console.log('Step 1 validation failed - missing fields:', {
-            title: !formData.title,
-            firstName: !formData.firstName,
-            lastName: !formData.lastName,
-            email: !formData.email,
-            phone: !formData.phone,
-            designation: !formData.designation,
-            password: !formData.password,
-            confirmPassword: !formData.confirmPassword,
-            institution: !formData.institution || formData.institution.trim() === '',
-            institutionValue: `"${formData.institution}"`
-          })
+        const requiredFields = {
+          title: formData.title,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          designation: formData.designation,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          institution: formData.institution
+        }
+        
+        const missingFields = Object.entries(requiredFields).filter(([key, value]) => {
+          return !value || (typeof value === 'string' && value.trim() === '')
+        })
+        
+        if (missingFields.length > 0) {
+          const missingFieldNames = missingFields.map(([key]) => key).join(', ')
           toast({
             title: "Missing Required Fields",
-            description: "Please fill in all required fields.",
+            description: `Please fill in: ${missingFieldNames}`,
             variant: "destructive"
           })
           return false

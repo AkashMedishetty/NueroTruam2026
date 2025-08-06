@@ -10,10 +10,15 @@ import * as THREE from 'three'
 function ParticleSphere() {
   const particlesRef = useRef<THREE.Group>(null)
   
-  // Reduced particle count for better performance
+  // Mobile-optimized particle count
   const particlePositions = useMemo(() => {
     const positions = []
-    const particleCount = 500 // Reduced from 1500 for better performance
+    // Detect mobile for particle optimization
+    const isMobile = typeof window !== 'undefined' && (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.innerWidth < 768
+    )
+    const particleCount = isMobile ? 150 : 500 // Further reduced particles on mobile
     
     for (let i = 0; i < particleCount; i++) {
       // Fibonacci sphere distribution for even spacing
@@ -54,16 +59,28 @@ function ParticleSphere() {
   )
 }
 
-// Brain Model with proper error handling
+// Brain Model with mobile optimization and proper error handling
 function BrainModel() {
   const meshRef = useRef<THREE.Group>(null)
   let scene: THREE.Group | null = null
   
-  try {
-    const gltf = useGLTF('/brain_model.glb')
-    scene = gltf.scene
-  } catch (error) {
-    console.log('Brain model not found, using fallback')
+  // Detect mobile device for performance optimization
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768 ||
+    (typeof navigator !== 'undefined' && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+  )
+  
+  // Only load heavy 3D model on desktop/high-performance devices
+  if (!isMobile) {
+    try {
+      const gltf = useGLTF('/brain_model.glb')
+      scene = gltf.scene
+    } catch (error) {
+      console.log('Brain model not found, using fallback')
+    }
+  } else {
+    console.log('Mobile device detected, using optimized fallback model')
   }
 
   useFrame((state) => {
@@ -128,11 +145,18 @@ function BrainModel() {
 
 function Controls() {
   const invalidate = useThree((state) => state.invalidate)
+  
+  // Mobile detection for controls
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768
+  )
+  
   return (
     <OrbitControls
-      enableZoom={true}
+      enableZoom={!isMobile} // Disable zoom on mobile to prevent scroll capture
       enablePan={false}
-      autoRotate
+      autoRotate={!isMobile} // Disable auto-rotate on mobile for better performance
       autoRotateSpeed={0.1}
       maxPolarAngle={Math.PI}
       minPolarAngle={0}
@@ -140,25 +164,45 @@ function Controls() {
       maxDistance={600}
       enableDamping={true}
       dampingFactor={0.05}
-      rotateSpeed={0.5}
+      rotateSpeed={isMobile ? 0.2 : 0.5} // Slower on mobile
       zoomSpeed={0.5}
-      touches={{
+      enableRotate={!isMobile} // Disable rotation on mobile to prevent scroll issues
+      touches={isMobile ? {} : {
         ONE: 2, // ROTATE
         TWO: 1  // DOLLY (zoom)
+      }}
+      mouseButtons={isMobile ? {} : {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
       }}
       onChange={() => invalidate()}
     />
   )
 }
 
-// Preload models with error handling
-try {
-  useGLTF.preload('/brain_model.glb')
-} catch (error) {
-  console.log('Brain model preload failed, will use fallback')
+// Conditionally preload models based on device capability
+if (typeof window !== 'undefined') {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth < 768
+  
+  // Only preload heavy models on desktop devices
+  if (!isMobile) {
+    try {
+      useGLTF.preload('/brain_model.glb')
+    } catch (error) {
+      console.log('Brain model preload failed, will use fallback')
+    }
+  }
 }
 
 export default function BrainModelClient() {
+  // Mobile performance detection
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768
+  )
+
   return (
     <Canvas
       camera={{ position: [0, 0, 300], fov: 75 }}
@@ -170,15 +214,21 @@ export default function BrainModelClient() {
       }}
       onPointerMissed={() => {}}
       gl={{ 
-        antialias: true,
+        antialias: !isMobile, // Disable antialiasing on mobile for performance
         alpha: true,
-        preserveDrawingBuffer: true,
-        powerPreference: 'high-performance'
+        preserveDrawingBuffer: false, // Better performance
+        powerPreference: isMobile ? 'low-power' : 'high-performance',
+        pixelRatio: isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio // Limit pixel ratio on mobile
+      }}
+      dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower DPR on mobile
+      performance={{ 
+        min: isMobile ? 0.2 : 0.5 // More aggressive performance throttling on mobile
       }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[10, 10, 5]} intensity={1.0} color="#ffffff" />
-      <pointLight position={[-10, -10, -5]} intensity={0.4} color="#ffffff" />
+      {/* Simplified lighting for mobile */}
+      <ambientLight intensity={isMobile ? 0.8 : 0.6} />
+      {!isMobile && <directionalLight position={[10, 10, 5]} intensity={1.0} color="#ffffff" />}
+      {!isMobile && <pointLight position={[-10, -10, -5]} intensity={0.4} color="#ffffff" />}
 
       <BrainModel />
       <Controls />

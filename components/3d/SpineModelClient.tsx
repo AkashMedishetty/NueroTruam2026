@@ -5,16 +5,28 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
-// Spine Model with proper error handling
+// Spine Model with mobile optimization and proper error handling
 function SpineModel() {
   const spineRef = useRef<THREE.Group>(null)
   let spineScene: THREE.Group | null = null
   
-  try {
-    const gltf = useGLTF('/spine_model.glb')
-    spineScene = gltf.scene
-  } catch (error) {
-    console.log('Spine GLB not found, using fallback spine')
+  // Detect mobile device for performance optimization
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768 ||
+    (typeof navigator !== 'undefined' && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+  )
+  
+  // Only load heavy 3D model on desktop/high-performance devices
+  if (!isMobile) {
+    try {
+      const gltf = useGLTF('/spine_model.glb')
+      spineScene = gltf.scene
+    } catch (error) {
+      console.log('Spine GLB not found, using fallback spine')
+    }
+  } else {
+    console.log('Mobile device detected, using optimized spine fallback')
   }
 
   useFrame((state) => {
@@ -77,14 +89,28 @@ function SpineModel() {
   )
 }
 
-// Preload spine model with error handling
-try {
-  useGLTF.preload('/spine_model.glb')
-} catch (error) {
-  console.log('Spine model preload failed, will use fallback')
+// Conditionally preload spine model based on device capability
+if (typeof window !== 'undefined') {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth < 768
+  
+  // Only preload heavy models on desktop devices
+  if (!isMobile) {
+    try {
+      useGLTF.preload('/spine_model.glb')
+    } catch (error) {
+      console.log('Spine model preload failed, will use fallback')
+    }
+  }
 }
 
 export default function SpineModelClient() {
+  // Mobile performance detection
+  const isMobile = typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768
+  )
+
   return (
     <Canvas
       camera={{ position: [4, 0, 6], fov: 45 }}
@@ -95,43 +121,55 @@ export default function SpineModelClient() {
       }}
       className="rounded-2xl bg-gradient-to-br from-orange-50 to-white dark:from-gray-800 dark:to-gray-900"
       gl={{ 
-        antialias: true,
+        antialias: !isMobile, // Disable antialiasing on mobile for performance
         alpha: true,
-        powerPreference: 'high-performance'
+        powerPreference: isMobile ? 'low-power' : 'high-performance',
+        pixelRatio: isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio
+      }}
+      dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower DPR on mobile
+      performance={{ 
+        min: isMobile ? 0.2 : 0.5 // More aggressive performance throttling on mobile
       }}
     >
+      {/* Optimized lighting for mobile */}
       <ambientLight intensity={0.4} />
-      <directionalLight 
-        position={[10, 10, 5]} 
-        intensity={1.2} 
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-      <directionalLight position={[-5, 5, -5]} intensity={0.6} color="#ffffff" />
-      <pointLight position={[0, 15, 0]} intensity={0.8} color="#ffa726" />
+      {!isMobile && (
+        <>
+          <directionalLight 
+            position={[10, 10, 5]} 
+            intensity={1.2} 
+            castShadow
+            shadow-mapSize-width={512}
+            shadow-mapSize-height={512}
+          />
+          <directionalLight position={[-5, 5, -5]} intensity={0.6} color="#ffffff" />
+          <pointLight position={[0, 15, 0]} intensity={0.8} color="#ffa726" />
+        </>
+      )}
+      {isMobile && <directionalLight position={[10, 10, 5]} intensity={1} />}
 
       <SpineModel />
 
       <OrbitControls
-        enableZoom={true}
+        enableZoom={!isMobile} // Disable zoom on mobile to prevent scroll capture
         enablePan={false}
         enableDamping={true}
         dampingFactor={0.05}
-        rotateSpeed={0.6}
+        rotateSpeed={isMobile ? 0.3 : 0.6} // Slower rotation on mobile
         zoomSpeed={0.4}
         minDistance={4}
         maxDistance={12}
-        touches={{
+        enableRotate={!isMobile} // Disable rotation on mobile to prevent scroll issues
+        touches={isMobile ? {} : {
           ONE: THREE.TOUCH.ROTATE,
           TWO: THREE.TOUCH.DOLLY_PAN
         }}
+        mouseButtons={isMobile ? {} : {
+          LEFT: THREE.MOUSE.ROTATE,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.PAN
+        }}
       />
-
-      {/* Basic lighting setup instead of Environment preset to avoid CSP issues */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <pointLight position={[-10, -10, -5]} intensity={0.5} />
     </Canvas>
   )
 }
