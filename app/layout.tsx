@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner"
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary"
 import { Analytics } from "./analytics"
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
+import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate"
 import "./globals.css"
 
 const inter = Inter({ 
@@ -303,6 +304,7 @@ export default function RootLayout({
                 <Toaster />
                 <Analytics />
                 <PWAInstallPrompt />
+                <ServiceWorkerUpdate />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}
               <div className="fixed inset-0 pointer-events-none z-0 opacity-60 dark:opacity-30">

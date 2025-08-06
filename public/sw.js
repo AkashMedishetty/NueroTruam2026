@@ -1,7 +1,7 @@
-// Service Worker for NeuroTrauma 2026 PWA
-const CACHE_NAME = 'neurotrauma-2026-v1';
-const STATIC_CACHE_NAME = 'neurotrauma-2026-static-v1';
-const DYNAMIC_CACHE_NAME = 'neurotrauma-2026-dynamic-v1';
+// Service Worker for NeuroTrauma 2026 PWA - Updated to fix auth issues
+const CACHE_NAME = 'neurotrauma-2026-v2';
+const STATIC_CACHE_NAME = 'neurotrauma-2026-static-v2';
+const DYNAMIC_CACHE_NAME = 'neurotrauma-2026-dynamic-v2';
 
 // Static assets to cache immediately (only essential ones)
 const STATIC_ASSETS = [
@@ -109,8 +109,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip external domains (except images)
-  if (url.origin !== location.origin && !request.destination === 'image') {
+  // Skip authentication routes (critical for NextAuth to work properly)
+  if (url.pathname.startsWith('/auth/')) {
+    return;
+  }
+
+  // Skip dashboard routes (require server-side session validation)
+  if (url.pathname.startsWith('/dashboard/')) {
+    return;
+  }
+
+  // Skip external domains (except images) - Fixed syntax error
+  if (url.origin !== location.origin && request.destination !== 'image') {
     return;
   }
 
@@ -254,4 +264,11 @@ self.addEventListener('notificationclick', (event) => {
   }
 });
 
-console.log('NeuroTrauma 2026 Service Worker loaded successfully');
+console.log('NeuroTrauma 2026 Service Worker v2 loaded successfully - Auth issues fixed');
+
+// Force update if user has old version
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
