@@ -1,0 +1,519 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 24 95% 97%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 24 95% 90%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 24 95% 53%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 24 95% 20%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 24 95% 30%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 24 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Mobile-first responsive design */
+  .container {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Improved focus states for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+  
+  /* Better text rendering */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Advanced 3D and Animation Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Smooth scrolling with momentum */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+/* Custom scrollbar with dark mode support */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6));
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+}
+
+/* Mobile-responsive utilities */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none;
+  }
+  
+  .text-responsive {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+  
+  .heading-responsive {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+  }
+}
+
+/* Improved animations with reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Disable 3D model animations for reduced motion */
+  .three-canvas-container {
+    display: none;
+  }
+  
+  .three-canvas-container::after {
+    content: "3D model disabled for reduced motion";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border-radius: 1.5rem;
+  }
+}
+
+/* Touch-friendly interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Better mobile viewport handling */
+@supports (-webkit-touch-callout: none) {
+  .mobile-vh {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+/* Advanced animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 107, 53, 0.6);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-8px) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes particlePulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.9;
+  }
+}
+
+@keyframes particleFloat3D {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateZ(0px) scale(var(--particle-scale, 1));
+    opacity: var(--base-opacity, 0.6);
+  }
+  33% {
+    transform: translate(-50%, -50%) translateZ(5px) scale(calc(var(--particle-scale, 1) * 1.1));
+    opacity: calc(var(--base-opacity, 0.6) * 1.3);
+  }
+  66% {
+    transform: translate(-50%, -50%) translateZ(-3px) scale(calc(var(--particle-scale, 1) * 0.9));
+    opacity: calc(var(--base-opacity, 0.6) * 0.8);
+  }
+}
+
+@keyframes particlePulse3D {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(calc(var(--particle-scale, 1) * 0.8));
+    opacity: calc(var(--base-opacity, 0.6) * 0.7);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(calc(var(--particle-scale, 1) * 1.3));
+    opacity: calc(var(--base-opacity, 0.6) * 1.2);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Text effects */
+.text-glow {
+  text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(255, 107, 53, 0.3);
+}
+
+/* Hover effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.1);
+}
+
+/* Particle effects */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.6;
+  animation: float 8s ease-in-out infinite;
+}
+
+/* Neon glow effects */
+.neon-orange {
+  box-shadow: 0 0 5px #ff6b35, 0 0 10px #ff6b35, 0 0 15px #ff6b35, 0 0 20px #ff6b35;
+}
+
+.neon-pink {
+  box-shadow: 0 0 5px #e91e63, 0 0 10px #e91e63, 0 0 15px #e91e63, 0 0 20px #e91e63;
+}
+
+/* Holographic effects */
+.holographic {
+  background: linear-gradient(45deg, #ff6b35, #e91e63, #9c27b0, #3f51b5, #00bcd4, #4caf50, #ffeb3b, #ff9800);
+  background-size: 400% 400%;
+  animation: gradient-shift 3s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 3D card effects */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.card-3d:hover {
+  transform: rotateY(10deg) rotateX(5deg);
+}
+
+/* Magnetic hover effect */
+.magnetic {
+  transition: transform 0.3s ease;
+}
+
+.magnetic:hover {
+  transform: translate3d(0, -5px, 0) scale(1.02);
+}
+
+/* Futuristic border */
+.futuristic-border {
+  position: relative;
+  border: 1px solid transparent;
+  background: linear-gradient(45deg, rgba(255, 107, 53, 0.1), rgba(233, 30, 99, 0.1)) padding-box,
+    linear-gradient(45deg, #ff6b35, #e91e63) border-box;
+}
+
+/* Cyberpunk glow */
+.cyberpunk-glow {
+  position: relative;
+}
+
+.cyberpunk-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #ff6b35, #e91e63, #9c27b0, #3f51b5);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+  filter: blur(10px);
+}
+
+.cyberpunk-glow:hover::before {
+  opacity: 0.7;
+}
+
+/* Enhanced Horizontal Scrolling Utilities */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Smooth Scroll Snapping */
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+.snap-center {
+  scroll-snap-align: center;
+}
+.snap-mandatory {
+  scroll-snap-type: x mandatory;
+}
+
+/* Custom 3D Perspective */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Enhanced Card Hover Effects */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smooth Scroll Behavior */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 3D Canvas Mobile Touch Optimization */
+canvas {
+  touch-action: auto !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Ensure page scrolling works over 3D models on mobile */
+@media (max-width: 768px) {
+  .three-canvas-container {
+    touch-action: pan-y pinch-zoom;
+    overflow: hidden;
+  }
+  
+  /* Reduce 3D model interaction sensitivity on mobile */
+  canvas {
+    pointer-events: auto;
+    touch-action: pan-y pinch-zoom;
+  }
+  
+  /* Make 3D models less intrusive on mobile scrolling */
+  .mobile-3d-model {
+    pointer-events: none;
+  }
+  
+  .mobile-3d-model:hover {
+    pointer-events: auto;
+  }
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Smooth hover performance for attraction cards */
+.attraction-card {
+  will-change: transform;
+  transform: translateZ(0) scale(1) translateY(0);
+  backface-visibility: hidden;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.attraction-card:hover {
+  transform: translateZ(0) scale(1.05) translateY(-12px);
+}
+
+/* Disable scroll momentum during horizontal scroll */
+.horizontal-scroll-container {
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Better scroll performance */
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #ff6b35, #e55a2b);
+  border-radius: 4px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #e55a2b, #d44a1f);
+}
