@@ -22,8 +22,8 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Invalid request', { status: 400 })
   }
   
-  // Add security headers to all responses
-  addSecurityHeaders(response)
+  // Temporarily disabled security headers for debugging - RE-ENABLE AFTER TESTING
+  // addSecurityHeaders(response)
   
   // Handle API routes
   if (request.nextUrl.pathname.startsWith('/api')) {

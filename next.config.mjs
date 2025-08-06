@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Cache-busting comment - force new deployment
 const nextConfig = {
   // Enable experimental features
   experimental: {
@@ -87,7 +88,8 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     // Enable image optimization for static images
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Temporarily disabled CSP for debugging - RE-ENABLE AFTER TESTING  
+    // contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // Enable compression
