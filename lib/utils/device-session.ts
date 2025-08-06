@@ -65,7 +65,7 @@ export function validateDeviceSession(
 
     // For now, we'll use the deviceId as a unique identifier
     // In a more sophisticated setup, you could decode and compare fingerprints
-    return sessionDeviceId && sessionDeviceId.length > 10
+    return !!sessionDeviceId && sessionDeviceId.length > 10
   } catch (error) {
     console.error('Device session validation error:', error)
     return false
