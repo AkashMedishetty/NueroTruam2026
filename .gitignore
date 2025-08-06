@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 
+# testing
+/coverage
+
 # next.js
 /.next/
 /out/
@@ -25,3 +28,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+
+# tmp and cache
+/tmp
+.cache

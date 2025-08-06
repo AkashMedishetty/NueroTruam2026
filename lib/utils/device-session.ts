@@ -41,14 +41,21 @@ export function createDeviceSessionId(fingerprint: DeviceFingerprint): string {
   const randomId = Math.random().toString(36).substring(2, 15)
   const timestamp = Date.now().toString(36)
   
-  return btoa(`${fpString}-${randomId}-${timestamp}`)
-    .replace(/[+/=]/g, '')
-    .substring(0, 32)
+  // Use a hash-like approach instead of base64 to ensure uniqueness
+  const combined = `${fpString}-${randomId}-${timestamp}`
+  let hash = 0
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  
+  return `dev_${Math.abs(hash).toString(36)}_${randomId}`
 }
 
 /**
  * Validate if a session belongs to the current device
- * Returns true if session is valid for this device
+ * Simplified for multi-device support while maintaining security
  */
 export function validateDeviceSession(
   sessionDeviceId: string,
@@ -56,19 +63,18 @@ export function validateDeviceSession(
   sessionLoginTime: number
 ): boolean {
   try {
-    // Check if session is too old (older than 7 days - much more lenient)
-    const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+    // Check if session is too old (14 days - more lenient for user convenience)
+    const maxAge = 14 * 24 * 60 * 60 * 1000 // 14 days in milliseconds
     if (Date.now() - sessionLoginTime > maxAge) {
-      console.log('Session expired due to age (7+ days)')
       return false
     }
 
-    // Allow all valid device IDs - don't restrict based on fingerprint
-    // This allows the same user to be logged in on multiple devices
-    return !!sessionDeviceId && sessionDeviceId.length > 10
+    // Simplified validation - just check if device ID exists and isn't empty
+    // This allows multi-device access while preventing completely invalid sessions
+    return !!sessionDeviceId && sessionDeviceId.length > 5
   } catch (error) {
     console.error('Device session validation error:', error)
-    // On error, allow the session to continue
+    // On error, allow the session to continue to prevent lockouts
     return true
   }
 }

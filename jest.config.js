@@ -14,11 +14,13 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   
   // Module name mapping for absolute imports
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
   },
   
   // Test patterns
@@ -49,16 +51,17 @@ const customJestConfig = {
     },
   },
   
-  // Mock files
-  moduleNameMapping: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
-  },
+  // Mock files added to moduleNameMapper above
   
   // Transform configuration
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
+  
+  // Transform ignore patterns for ES modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(bson|mongodb|mongoose)/)'
+  ],
   
   // Test timeout
   testTimeout: 10000,
@@ -70,9 +73,7 @@ const customJestConfig = {
     '<rootDir>/dist/',
   ],
   
-  // Global setup and teardown
-  globalSetup: '<rootDir>/jest.globalSetup.js',
-  globalTeardown: '<rootDir>/jest.globalTeardown.js',
+  // Remove global setup files that don't exist
 }
 
 // Export Jest configuration
