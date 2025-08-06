@@ -95,10 +95,19 @@
   - Set up monitoring for ongoing authentication health
   - _Requirements: 1.1, 1.2, 1.3, 3.1_
 
-- [x] 11. Fix multi-user session conflicts and race conditions
+- [ ] 11. Fix multi-user session conflicts and race conditions
+
+
   - Investigate and fix session state conflicts when multiple users login concurrently
   - Resolve rapid session status switching between authenticated/unauthenticated
   - Fix JWT token validation race conditions in middleware and client components
   - Implement proper session isolation to prevent user A's session affecting user B
   - Add session debugging and monitoring for concurrent authentication scenarios
   - _Requirements: 1.2, 3.3, 4.1, 4.2_
+- [x] 12. Fix database session configuration for credentials authentication
+  - Fix the critical "Signin in with credentials only supported if JWT strategy is enabled" error
+  - Revert to database session strategy with MongoDB adapter as per MULTI_USER_AUTH_SOLUTION.md
+  - Implement proper database session callbacks with device-specific session isolation
+  - Ensure credentials authentication works correctly with database sessions and MongoDB adapter
+  - Test credentials authentication flow with database sessions in development and production
+  - _Requirements: 2.1, 2.2, 3.1_

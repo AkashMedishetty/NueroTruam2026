@@ -1,19 +1,13 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
-import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
-import { getAuthUrl } from '@/lib/auth-config'
 import { logSessionLogin, logSessionError } from '@/lib/utils/session-monitor'
 
-// MongoDB client for NextAuth adapter
-const client = new MongoClient(process.env.MONGODB_URI!)
-const clientPromise = client.connect()
-
 export const authOptions: NextAuthOptions = {
-    adapter: MongoDBAdapter(clientPromise),
+    // Note: Cannot use adapter with CredentialsProvider - NextAuth v4 limitation
+    // adapter: MongoDBAdapter(clientPromise),
     providers: [
         CredentialsProvider({
             id: 'credentials',
@@ -94,13 +88,9 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     session: {
-        strategy: 'database' as const,
+        strategy: 'jwt' as const,
         maxAge: 30 * 24 * 60 * 60, // 30 days
         updateAge: 24 * 60 * 60, // 24 hours
-        generateSessionToken: () => {
-            // Generate unique session tokens to prevent conflicts
-            return `${Date.now()}_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`
-        }
     },
 
     cookies: {
@@ -139,52 +129,85 @@ export const authOptions: NextAuthOptions = {
         }
     },
     callbacks: {
-        async session({ session, user }) {
+        async jwt({ token, user, account }) {
             try {
-                if (user && session.user) {
-                    // Get user data from database for accurate information
-                    await connectDB()
-                    const dbUser = await User.findById(user.id)
+                if (user) {
+                    // Store user data in JWT token (required for CredentialsProvider)
+                    token.id = user.id
+                    token.role = user.role
+                    token.registrationId = user.registrationId
+                    token.registrationStatus = user.registrationStatus
                     
-                    if (dbUser) {
-                        session.user.id = user.id
-                        session.user.role = dbUser.role
-                        session.user.registrationId = dbUser.registration.registrationId
-                        session.user.registrationStatus = dbUser.registration.status
-                        
-                        // Add unique session identifiers for isolation
-                        session.sessionId = `db_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
-                        session.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-                        session.loginTime = Date.now()
-                        session.lastValidated = Date.now()
-                        
-                        console.log('🔐 Database session created:', {
-                            userId: user.id,
-                            email: session.user.email,
-                            role: dbUser.role,
-                            sessionId: session.sessionId,
-                            timestamp: new Date().toISOString()
-                        })
-                        
-                        // Log session creation
-                        logSessionLogin(user.id, session.sessionId, session.deviceId)
-                    }
+                    // Add unique session identifiers for device isolation (as per MULTI_USER_AUTH_SOLUTION.md)
+                    const timestamp = Date.now()
+                    const randomPart1 = Math.random().toString(36).substring(2, 15)
+                    const randomPart2 = Math.random().toString(36).substring(2, 15)
+                    const userPart = user.id.substring(0, 8)
+                    
+                    const sessionId = `jwt_${userPart}_${timestamp}_${randomPart1}_${randomPart2}`
+                    token.sessionId = sessionId
+                    token.deviceId = `dev_${timestamp}_${randomPart1}`
+                    token.loginTime = timestamp
+                    
+                    console.log('🔐 JWT session created with device isolation:', {
+                        userId: user.id,
+                        email: user.email,
+                        sessionId,
+                        deviceId: token.deviceId,
+                        timestamp: new Date().toISOString()
+                    })
+                    
+                    // Log session creation
+                    logSessionLogin(user.id, sessionId, token.deviceId)
+                }
+                return token
+            } catch (error) {
+                console.error('🚨 JWT Callback Error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    hasUser: !!user,
+                    timestamp: new Date().toISOString()
+                })
+                return token
+            }
+        },
+        async session({ session, token }) {
+            try {
+                if (token) {
+                    // Transfer data from JWT token to session (as per MULTI_USER_AUTH_SOLUTION.md)
+                    session.user.id = token.id as string
+                    session.user.role = token.role as string
+                    session.user.registrationId = token.registrationId as string
+                    session.user.registrationStatus = token.registrationStatus as string
+                    
+                    // Add device isolation identifiers
+                    session.sessionId = token.sessionId as string
+                    session.deviceId = token.deviceId as string
+                    session.loginTime = token.loginTime as number
+                    session.lastValidated = Date.now()
+                    
+                    console.log('🔐 Session from JWT with device isolation:', {
+                        userId: session.user.id,
+                        email: session.user.email,
+                        sessionId: session.sessionId,
+                        deviceId: session.deviceId,
+                        timestamp: new Date().toISOString()
+                    })
                 }
                 return session
             } catch (error) {
-                console.error('🚨 Database Session Callback Error:', {
+                console.error('🚨 Session Callback Error:', {
                     error: error instanceof Error ? error.message : 'Unknown error',
-                    userId: user?.id,
+                    hasToken: !!token,
                     timestamp: new Date().toISOString()
                 })
                 return session
             }
         },
-        async signIn({ user, account, profile, email, credentials }) {
+        async signIn({ user, account }) {
             try {
                 // For credentials provider, user is already validated
                 if (account?.provider === 'credentials') {
-                    console.log('✅ Database session sign-in successful:', {
+                    console.log('✅ JWT session sign-in successful (with device isolation):', {
                         userId: user.id,
                         email: user.email,
                         timestamp: new Date().toISOString()

@@ -30,18 +30,7 @@ const nextConfig = {
     webpackBuildWorker: true,
   },
 
-  // Advanced webpack optimizations
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Only apply optimizations in production
-    if (!dev) {
-      // Optimize bundle size
-      config.optimization = {
-        ...config.optimization,
-      }
-    }
 
-    return config
-  },
 
   // Image optimization
   images: {
