@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Device Auth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input, button { margin: 5px; padding: 10px; }
+        button { background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+        .device-info { background: #e7f3ff; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Multi-Device Authentication Test</h1>
+    
+    <div class="device-info">
+        <strong>Device ID:</strong> <span id="device-id"></span><br>
+        <strong>Test Instructions:</strong> Open this page in multiple browser tabs/windows to simulate different devices
+    </div>
+    
+    <div class="container" id="login-form">
+        <h3>Login</h3>
+        <input type="email" id="email" placeholder="Email" value="">
+        <input type="password" id="password" placeholder="Password" value="">
+        <button onclick="login()">Login</button>
+        <div id="login-status"></div>
+    </div>
+    
+    <div class="container" id="session-info" style="display:none;">
+        <h3>✅ Logged In Successfully</h3>
+        <pre id="session-data"></pre>
+        <button onclick="getActiveSessions()">Refresh Active Sessions</button>
+        <button onclick="logout()">Logout This Device</button>
+    </div>
+    
+    <div class="container">
+        <h3>Active Sessions</h3>
+        <div id="sessions-count">Loading...</div>
+        <div id="active-sessions"></div>
+        <button onclick="getActiveSessions()">Refresh Sessions</button>
+    </div>
+
+    <div class="container">
+        <h3>Test Multi-Device Login</h3>
+        <p>1. Login in this tab</p>
+        <p>2. Open this page in a new tab/window</p>
+        <p>3. Login with the same credentials</p>
+        <p>4. Both tabs should stay logged in! ✅</p>
+        <p>5. Check "Active Sessions" to see multiple sessions</p>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002'
+        let deviceFingerprint = ''
+        
+        // Generate unique device fingerprint
+        function generateDeviceFingerprint() {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            ctx.textBaseline = 'top'
+            ctx.font = '14px Arial'
+            ctx.fillText('Device fingerprint', 2, 2)
+            
+            const fingerprint = [
+                navigator.userAgent.substring(0, 50),
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                canvas.toDataURL().substring(0, 50)
+            ].join('|')
+            
+            // Simple hash
+            let hash = 0
+            for (let i = 0; i < fingerprint.length; i++) {
+                const char = fingerprint.charCodeAt(i)
+                hash = ((hash << 5) - hash) + char
+                hash = hash & hash
+            }
+            
+            return `device_${Math.abs(hash).toString(36)}_${Date.now()}`
+        }
+        
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('login-status')
+            statusDiv.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`
+            setTimeout(() => statusDiv.innerHTML = '', 5000)
+        }
+        
+        async function login() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            if (!email || !password) {
+                showStatus('Please enter email and password', true)
+                return
+            }
+            
+            try {
+                showStatus('Logging in...')
+                
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Device-Fingerprint': deviceFingerprint
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                })
+                
+                const data = await response.json()
+                
+                if (data.success) {
+                    showStatus('Login successful! ✅')
+                    document.getElementById('login-form').style.display = 'none'
+                    document.getElementById('session-info').style.display = 'block'
+                    document.getElementById('session-data').textContent = JSON.stringify(data, null, 2)
+                    await getActiveSessions()
+                } else {
+                    showStatus('Login failed: ' + data.error, true)
+                }
+            } catch (error) {
+                showStatus('Network error: ' + error.message, true)
+                console.error('Login error:', error)
+            }
+        }
+        
+        async function getActiveSessions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/active-sessions`, {
+                    credentials: 'include'
+                })
+                
+                if (response.ok) {
+                    const sessions = await response.json()
+                    displayActiveSessions(sessions)
+                } else {
+                    document.getElementById('sessions-count').textContent = 'Not logged in'
+                    document.getElementById('active-sessions').innerHTML = ''
+                }
+            } catch (error) {
+                console.error('Error fetching sessions:', error)
+                document.getElementById('sessions-count').textContent = 'Error loading sessions'
+            }
+        }
+        
+        function displayActiveSessions(sessions) {
+            const count = sessions.length
+            document.getElementById('sessions-count').innerHTML = 
+                `<strong>${count} active session${count !== 1 ? 's' : ''}</strong>`
+            
+            const sessionsHtml = sessions.map(session => {
+                const loginTime = new Date(session.loginTime).toLocaleString()
+                const lastActivity = new Date(session.lastActivity).toLocaleString()
+                const isCurrent = session.isCurrent
+                
+                return `
+                    <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px; ${isCurrent ? 'background: #e7f3ff;' : ''}">
+                        <div><strong>Device:</strong> ${session.deviceId}</div>
+                        <div><strong>Login Time:</strong> ${loginTime}</div>
+                        <div><strong>Last Activity:</strong> ${lastActivity}</div>
+                        <div><strong>Status:</strong> ${isCurrent ? '🟢 Current Device' : '🔵 Other Device'}</div>
+                        ${!isCurrent ? `<button onclick="terminateSession('${session.deviceFingerprint}')" style="background: #dc3545; margin-top: 10px;">Terminate This Session</button>` : ''}
+                    </div>
+                `
+            }).join('')
+            
+            document.getElementById('active-sessions').innerHTML = sessionsHtml
+        }
+        
+        async function terminateSession(deviceFingerprint) {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/terminate-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ deviceFingerprint })
+                })
+                
+                if (response.ok) {
+                    showStatus('Session terminated ✅')
+                    await getActiveSessions()
+                } else {
+                    showStatus('Failed to terminate session', true)
+                }
+            } catch (error) {
+                showStatus('Error terminating session', true)
+                console.error('Terminate session error:', error)
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                
+                if (response.ok) {
+                    showStatus('Logged out successfully')
+                    document.getElementById('login-form').style.display = 'block'
+                    document.getElementById('session-info').style.display = 'none'
+                    document.getElementById('session-data').textContent = ''
+                    await getActiveSessions()
+                } else {
+                    showStatus('Logout failed', true)
+                }
+            } catch (error) {
+                showStatus('Logout error', true)
+                console.error('Logout error:', error)
+            }
+        }
+        
+        // Initialize on page load
+        window.onload = async function() {
+            deviceFingerprint = generateDeviceFingerprint()
+            document.getElementById('device-id').textContent = deviceFingerprint
+            
+            // Check if already logged in
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/session`, {
+                    credentials: 'include'
+                })
+                
+                const data = await response.json()
+                
+                if (data.authenticated) {
+                    document.getElementById('login-form').style.display = 'none'
+                    document.getElementById('session-info').style.display = 'block'
+                    document.getElementById('session-data').textContent = JSON.stringify(data, null, 2)
+                }
+            } catch (error) {
+                console.error('Session check error:', error)
+            }
+            
+            // Always load active sessions
+            await getActiveSessions()
+        }
+        
+        // Auto-refresh sessions every 30 seconds
+        setInterval(getActiveSessions, 30000)
+    </script>
+</body>
+</html>

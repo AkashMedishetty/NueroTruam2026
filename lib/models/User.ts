@@ -36,6 +36,15 @@ export interface IUser extends Document {
     registrationDate: Date
     paymentDate?: Date
   }
+  activeSessions: Array<{
+    sessionId: string
+    deviceId: string
+    deviceFingerprint: string
+    loginTime: Date
+    lastActivity: Date
+    userAgent?: string
+    ipAddress?: string
+  }>
   role: 'user' | 'admin' | 'reviewer'
   isActive: boolean
   createdAt: Date
@@ -129,6 +138,30 @@ const UserSchema = new Schema<IUser>({
     },
     paymentDate: Date
   },
+  activeSessions: [{
+    sessionId: {
+      type: String,
+      required: true
+    },
+    deviceId: {
+      type: String,
+      required: true
+    },
+    deviceFingerprint: {
+      type: String,
+      required: true
+    },
+    loginTime: {
+      type: Date,
+      default: Date.now
+    },
+    lastActivity: {
+      type: Date,
+      default: Date.now
+    },
+    userAgent: String,
+    ipAddress: String
+  }],
   role: {
     type: String,
     enum: ['user', 'admin', 'reviewer'],

@@ -115,7 +115,15 @@ function UserMenu({ userData }: { userData: any }) {
 
   const handleLogout = async () => {
     try {
+      // Call our logout API to clean up session in database
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      // Then sign out from NextAuth
       await signOut({ redirect: false })
+      
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account."
@@ -471,8 +479,22 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                         className="w-full justify-start h-12 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                         onClick={async () => {
                           setIsMenuOpen(false)
-                          await signOut({ redirect: false })
-                          router.push('/')
+                          try {
+                            // Call our logout API to clean up session in database
+                            await fetch('/api/auth/logout', {
+                              method: 'POST',
+                              credentials: 'include'
+                            })
+                            
+                            // Then sign out from NextAuth
+                            await signOut({ redirect: false })
+                            router.push('/')
+                          } catch (error) {
+                            console.error('Logout error:', error)
+                            // Still try to sign out even if API call fails
+                            await signOut({ redirect: false })
+                            router.push('/')
+                          }
                         }}
                       >
                         <LogOut className="w-4 h-4 mr-3" />

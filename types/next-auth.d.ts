@@ -1,8 +1,13 @@
 import NextAuth from "next-auth"
-import { JWT } from "next-auth/jwt"
 
 declare module "next-auth" {
   interface Session {
+    sessionId: string
+    deviceId: string
+    loginTime: number
+    lastValidated: number
+    deviceIsolated: boolean
+    deviceFingerprint: string
     user: {
       id: string
       email: string
@@ -11,10 +16,18 @@ declare module "next-auth" {
       registrationId: string
       registrationStatus: string
     }
+  }
+
+  interface JWT {
+    id: string
+    role: string
+    registrationId: string
+    registrationStatus: string
     sessionId: string
     deviceId: string
     loginTime: number
-    lastValidated: number
+    deviceIsolated: boolean
+    deviceFingerprint: string
   }
 
   interface User {
@@ -24,17 +37,5 @@ declare module "next-auth" {
     role: string
     registrationId: string
     registrationStatus: string
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    role: string
-    registrationId: string
-    registrationStatus: string
-    sessionId: string
-    deviceId: string
-    loginTime: number
-    expired?: boolean
   }
 }
