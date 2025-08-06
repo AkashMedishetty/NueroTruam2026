@@ -67,7 +67,8 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
     "upgrade-insecure-requests"
   ].join('; ')
 
-  response.headers.set('Content-Security-Policy', csp)
+  // Temporarily disabled CSP for debugging - RE-ENABLE AFTER TESTING
+  // response.headers.set('Content-Security-Policy', csp)
   
   // Other security headers
   response.headers.set('X-Frame-Options', 'DENY')

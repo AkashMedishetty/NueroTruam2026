@@ -128,10 +128,11 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
           },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.googletagmanager.com blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://api.razorpay.com https://*.razorpay.com;"
-          }
+          // Temporarily disabled CSP for debugging - RE-ENABLE AFTER TESTING
+          // {
+          //   key: 'Content-Security-Policy',
+          //   value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.razorpay.com https://*.razorpay.com https://raw.githack.com https://*.githubusercontent.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.googletagmanager.com blob: data:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://api.razorpay.com https://*.razorpay.com;"
+          // }
         ]
       },
       {
