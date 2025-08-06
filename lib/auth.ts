@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import { getAuthUrl } from '@/lib/auth-config'
+import { logSessionLogin, logSessionError } from '@/lib/utils/session-monitor'
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -53,6 +54,13 @@ export const authOptions: NextAuthOptions = {
                         timestamp: new Date().toISOString()
                     })
 
+                    // Log successful authentication for monitoring
+                    logSessionLogin(
+                        user._id.toString(),
+                        `temp_${Date.now()}`, // Temporary session ID, will be replaced in JWT callback
+                        'unknown' // Device ID will be set in JWT callback
+                    )
+
                     return {
                         id: user._id.toString(),
                         email: user.email,
@@ -62,12 +70,17 @@ export const authOptions: NextAuthOptions = {
                         registrationStatus: user.registration.status
                     }
                 } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
                     console.error('Authentication error:', {
-                        error: error instanceof Error ? error.message : 'Unknown error',
+                        error: errorMessage,
                         stack: error instanceof Error ? error.stack : undefined,
                         email: credentials.email,
                         timestamp: new Date().toISOString()
                     })
+
+                    // Log authentication error for monitoring
+                    logSessionError(`Authentication failed: ${errorMessage}`, undefined, undefined)
+                    
                     return null
                 }
             }
@@ -80,6 +93,35 @@ export const authOptions: NextAuthOptions = {
     },
     jwt: {
         maxAge: 30 * 24 * 60 * 60, // 30 days (match session maxAge)
+        // Add error handling for JWT operations
+        encode: async ({ secret, token, maxAge }) => {
+            try {
+                const { encode } = await import('next-auth/jwt')
+                return await encode({ secret, token, maxAge })
+            } catch (error) {
+                console.error('🚨 JWT Encode Error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    tokenKeys: token ? Object.keys(token) : [],
+                    timestamp: new Date().toISOString()
+                })
+                throw error
+            }
+        },
+        decode: async ({ secret, token }) => {
+            try {
+                const { decode } = await import('next-auth/jwt')
+                return await decode({ secret, token })
+            } catch (error) {
+                console.error('🚨 JWT Decode Error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    tokenLength: token?.length || 0,
+                    tokenPreview: token?.substring(0, 50) + '...',
+                    timestamp: new Date().toISOString()
+                })
+                // Return null instead of throwing to prevent cascading errors
+                return null
+            }
+        }
     },
     cookies: {
         sessionToken: {
@@ -115,33 +157,91 @@ export const authOptions: NextAuthOptions = {
         }
     },
     callbacks: {
-        async jwt({ token, user, account }) {
-            if (user) {
-                token.role = user.role
-                token.registrationId = user.registrationId
-                token.registrationStatus = user.registrationStatus
-                
-                // Only set deviceId and loginTime on initial login (when user object exists)
-                // This prevents overwriting existing device sessions
-                if (!token.deviceId) {
+        async jwt({ token, user, account, trigger }) {
+            try {
+                if (user) {
+                    token.role = user.role
+                    token.registrationId = user.registrationId
+                    token.registrationStatus = user.registrationStatus
+                    
+                    // Create a unique session identifier for this login
+                    // Include timestamp and random component for uniqueness
+                    const sessionId = `${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+                    token.sessionId = sessionId
                     token.deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36)
                     token.loginTime = Date.now()
+                    
+                    console.log('🔐 New JWT token created:', {
+                        userId: user.id,
+                        email: user.email,
+                        sessionId,
+                        deviceId: token.deviceId,
+                        timestamp: new Date().toISOString()
+                    })
+
+                    // Update session monitor with actual session details
+                    logSessionLogin(user.id, sessionId, token.deviceId)
                 }
+                
+                // Add token validation - but don't return null as it breaks the type
+                if (token.exp && typeof token.exp === 'number' && Date.now() / 1000 > token.exp) {
+                    console.warn('⚠️ Token expired in JWT callback:', {
+                        exp: token.exp,
+                        now: Math.floor(Date.now() / 1000),
+                        sessionId: token.sessionId
+                    })
+                    // Instead of returning null, create a minimal token that will be rejected elsewhere
+                    return {
+                        ...token,
+                        expired: true,
+                        exp: 0 // Set expiry to 0 to ensure it's treated as expired
+                    }
+                }
+                
+                return token
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+                console.error('🚨 JWT Callback Error:', {
+                    error: errorMessage,
+                    trigger,
+                    hasUser: !!user,
+                    tokenKeys: token ? Object.keys(token) : [],
+                    timestamp: new Date().toISOString()
+                })
+
+                // Log JWT callback error
+                logSessionError(`JWT callback error: ${errorMessage}`, token?.sub, token?.sessionId as string)
+                // Return the token as-is to prevent breaking the session
+                return token
             }
-            return token
         },
         async session({ session, token }) {
-            if (token) {
-                session.user.id = token.sub!
-                session.user.role = token.role as string
-                session.user.registrationId = token.registrationId as string
-                session.user.registrationStatus = token.registrationStatus as string
-                
-                // Add device identifier to session for validation
-                session.deviceId = token.deviceId as string
-                session.loginTime = token.loginTime as number
+            try {
+                if (token) {
+                    session.user.id = token.sub!
+                    session.user.role = token.role as string
+                    session.user.registrationId = token.registrationId as string
+                    session.user.registrationStatus = token.registrationStatus as string
+                    
+                    // Add session isolation identifiers
+                    session.sessionId = token.sessionId as string
+                    session.deviceId = token.deviceId as string
+                    session.loginTime = token.loginTime as number
+                    
+                    // Add session validation timestamp
+                    session.lastValidated = Date.now()
+                }
+                return session
+            } catch (error) {
+                console.error('🚨 Session Callback Error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    hasToken: !!token,
+                    tokenKeys: token ? Object.keys(token) : [],
+                    timestamp: new Date().toISOString()
+                })
+                // Return session as-is to prevent breaking
+                return session
             }
-            return session
         },
         async signIn({ user, account, profile, email, credentials }) {
             // Allow multiple concurrent sessions for the same user on different devices

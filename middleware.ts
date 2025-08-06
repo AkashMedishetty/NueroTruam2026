@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { addSecurityHeaders, validateRequest, IPBlocker } from '@/lib/middleware/security'
 import { apiRateLimit } from '@/lib/middleware/rateLimiter'
+import { SessionManager } from '@/lib/auth/session-manager'
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
@@ -64,20 +65,38 @@ export async function middleware(request: NextRequest) {
     const isFromLogin = referer?.includes('/auth/login')
     
     try {
-      const token = await getToken({ 
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-        // Add production-specific configurations
-        secureCookie: process.env.NODE_ENV === 'production',
-        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
-      })
+      // Use the enhanced session manager for better error handling
+      const sessionResult = await SessionManager.validateSession(request)
+      const token = sessionResult.token
       
-      console.log(`🔍 Middleware token check for ${request.nextUrl.pathname}:`, {
+      SessionManager.logSessionDebug('middleware-protected-route', {
+        pathname: request.nextUrl.pathname,
         hasToken: !!token,
+        isValid: sessionResult.isValid,
+        error: sessionResult.error,
         isFromLogin,
         userAgent: request.headers.get('user-agent')?.substring(0, 50),
         cookies: request.cookies.getAll().map(c => c.name)
       })
+      
+      // Handle JWT decryption errors specifically
+      if (!sessionResult.isValid && sessionResult.error?.includes('decryption operation failed')) {
+        console.error('🚨 JWT Decryption Error - clearing corrupted session:', {
+          pathname: request.nextUrl.pathname,
+          error: sessionResult.error,
+          shouldRetry: sessionResult.shouldRetry
+        })
+        
+        SessionManager.clearCorruptedSession(request)
+        
+        // Redirect to login to get a fresh session
+        if (!isFromLogin) {
+          const loginUrl = new URL('/auth/login', request.url)
+          loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname)
+          loginUrl.searchParams.set('error', 'session_corrupted')
+          return NextResponse.redirect(loginUrl)
+        }
+      }
       
       if (!token && !isFromLogin) {
         // Redirect to login for protected routes (only if not coming from login)
@@ -103,10 +122,15 @@ export async function middleware(request: NextRequest) {
         userAgent: request.headers.get('user-agent')?.substring(0, 50),
         timestamp: new Date().toISOString()
       })
+      
+      // Clear potentially corrupted session
+      SessionManager.clearCorruptedSession(request)
+      
       // In case of token error, redirect to login
       if (!isFromLogin) {
         const loginUrl = new URL('/auth/login', request.url)
         loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname)
+        loginUrl.searchParams.set('error', 'token_error')
         return NextResponse.redirect(loginUrl)
       }
     }
@@ -123,12 +147,9 @@ export async function middleware(request: NextRequest) {
     const referer = request.headers.get('referer')
     const isFromDashboard = referer?.includes('/dashboard')
     
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === 'production',
-      cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
-    })
+    // Use session manager for consistent token validation
+    const sessionResult = await SessionManager.validateSession(request)
+    const token = sessionResult.token
     
     if (token && !isFromDashboard) {
       // Redirect to dashboard if already logged in (only if not coming from dashboard)

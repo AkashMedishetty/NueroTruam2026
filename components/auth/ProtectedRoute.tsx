@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState, useRef, ReactNode } from "react"
 import { Loader2 } from "lucide-react"
 import { redirectGuard } from "@/lib/utils/redirect-guard"
+import { useStableSession } from "./SessionStabilizer"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -17,7 +18,7 @@ export function ProtectedRoute({
   requiredRole = "user",
   fallbackUrl = "/auth/login"
 }: ProtectedRouteProps) {
-  const { data: session, status } = useSession()
+  const { session, status, isStable, isLoading } = useStableSession()
   const router = useRouter()
   const pathname = usePathname()
   const [isRedirecting, setIsRedirecting] = useState(false)
@@ -30,8 +31,8 @@ export function ProtectedRoute({
       clearTimeout(timeoutRef.current)
     }
 
-    // Don't process if loading or already redirecting
-    if (status === "loading" || isRedirecting) return
+    // Don't process if loading, not stable, or already redirecting
+    if (isLoading || !isStable || isRedirecting) return
 
     // Reset redirect flag when session status changes
     if (status === "authenticated") {
@@ -82,23 +83,12 @@ export function ProtectedRoute({
     }
 
     if (status === "unauthenticated") {
-      // In production, add a small delay to allow for session initialization
-      if (process.env.NODE_ENV === 'production' && !redirectAttempted.current) {
-        console.log('⏳ Production: Waiting for session initialization...')
-        timeoutRef.current = setTimeout(() => {
-          if (status === "unauthenticated") {
-            const returnUrl = encodeURIComponent(pathname)
-            const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
-            handleRedirect(loginUrl, "ProtectedRoute-unauthenticated-delayed")
-          }
-        }, 1000) // 1 second delay for production
-        return
+      // Only redirect if session is stable and we're sure it's unauthenticated
+      if (isStable && !redirectAttempted.current) {
+        const returnUrl = encodeURIComponent(pathname)
+        const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
+        handleRedirect(loginUrl, "ProtectedRoute-unauthenticated-stable")
       }
-      
-      // Redirect to login with return URL
-      const returnUrl = encodeURIComponent(pathname)
-      const loginUrl = `${fallbackUrl}?callbackUrl=${returnUrl}`
-      handleRedirect(loginUrl, "ProtectedRoute-unauthenticated")
       return
     }
 
@@ -127,13 +117,15 @@ export function ProtectedRoute({
     }
   }, [])
 
-  // Show loading while checking authentication
-  if (status === "loading") {
+  // Show loading while checking authentication or stabilizing
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
-          <p className="text-gray-600">Loading authentication...</p>
+          <p className="text-gray-600">
+            {!isStable ? "Stabilizing session..." : "Loading authentication..."}
+          </p>
         </div>
       </div>
     )
