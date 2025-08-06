@@ -580,10 +580,10 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
               © 2026 NeuroTrauma Society of India. All rights reserved.
             </div>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <Link href="/privacy-policy" className="text-sm text-gray-400 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <Link href="/terms-conditions" className="text-sm text-gray-400 hover:text-white transition-colors">
                 Terms of Service
               </Link>
             </div>

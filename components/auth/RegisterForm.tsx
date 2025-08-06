@@ -459,7 +459,7 @@ export function RegisterForm() {
           />
           <label htmlFor="agreeTerms" className="text-sm leading-relaxed">
             I agree to the{" "}
-            <Link href="/terms" className="text-orange-600 hover:underline">
+            <Link href="/terms-conditions" className="text-orange-600 hover:underline">
               Terms and Conditions
             </Link>{" "}
             of the NeuroTrauma 2026 Conference
@@ -475,7 +475,7 @@ export function RegisterForm() {
           />
           <label htmlFor="agreePrivacy" className="text-sm leading-relaxed">
             I agree to the{" "}
-            <Link href="/privacy" className="text-orange-600 hover:underline">
+            <Link href="/privacy-policy" className="text-orange-600 hover:underline">
               Privacy Policy
             </Link>{" "}
             and consent to the processing of my personal data
