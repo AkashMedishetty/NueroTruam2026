@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         let imported = 0
         let errors: string[] = []
 
-        return new Promise((resolve) => {
+        return new Promise<NextResponse>((resolve) => {
             stream
                 .pipe(csv())
                 .on('data', (data) => results.push(data))

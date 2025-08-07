@@ -524,8 +524,8 @@ export function EnhancedAdminPanel() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(registration.registration.paymentStatus)}>
-                        {registration.registration.paymentStatus}
+                      <Badge className={getStatusColor(registration.registration.status)}>
+                        {registration.registration.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
