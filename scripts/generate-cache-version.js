@@ -59,7 +59,7 @@ function createCacheManifest(version) {
     version,
     timestamp: Date.now(),
     deployedAt: new Date().toISOString(),
-    forceUpdate: true
+    forceUpdate: false // Changed from true to prevent infinite reload loops
   };
   
   const manifestPath = path.join(__dirname, '..', 'public', 'cache-manifest.json');

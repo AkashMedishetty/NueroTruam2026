@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner"
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary"
 import { Analytics } from "./analytics"
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
-import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate"
+// import { ServiceWorkerUpdate } from "@/components/ServiceWorkerUpdate" // Removed to prevent infinite reload loops
 import { DeviceSessionManager } from "@/components/auth/DeviceSessionManager"
 import { RedirectLoopHandler } from "@/components/auth/RedirectLoopHandler"
 import "./globals.css"
@@ -324,10 +324,10 @@ export default function RootLayout({
                       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                     }
                     
-                    // Check for updates every 30 seconds
+                    // Check for updates every 5 minutes (less aggressive)
                     setInterval(function() {
                       registration.update();
-                    }, 30000);
+                    }, 5 * 60 * 1000);
                   }
                 }).catch(function(error) {
                   console.error('❌ Service worker registration failed:', error);
@@ -389,7 +389,8 @@ export default function RootLayout({
                   <Toaster />
                   <Analytics />
                   <PWAInstallPrompt />
-                  {process.env.NODE_ENV === 'production' && <ServiceWorkerUpdate />}
+                  {/* {process.env.NODE_ENV === 'production' && <ServiceWorkerUpdate />} */}
+        {/* ServiceWorkerUpdate component removed to prevent infinite reload loops */}
                   <RedirectLoopHandler />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}
