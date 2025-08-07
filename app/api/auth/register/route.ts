@@ -128,19 +128,23 @@ export async function POST(request: NextRequest) {
       registrationId: newUser.registration.registrationId
     })
 
-    // Send registration confirmation email
-    try {
-      await EmailService.sendRegistrationConfirmation({
-        email: newUser.email,
-        name: `${newUser.profile.firstName} ${newUser.profile.lastName}`,
-        registrationId: newUser.registration.registrationId,
-        registrationType: newUser.registration.type,
-        workshopSelections: registration?.workshopSelections || [],
-        accompanyingPersons: registration?.accompanyingPersons?.length || 0
-      })
-    } catch (emailError) {
-      console.error('Failed to send registration email:', emailError)
-      // Don't fail the registration if email fails
+    // Send registration confirmation email (skip for complementary and sponsored users)
+    if (newUser.registration.paymentType !== 'complementary' && newUser.registration.paymentType !== 'sponsored') {
+      try {
+        await EmailService.sendRegistrationConfirmation({
+          email: newUser.email,
+          name: `${newUser.profile.firstName} ${newUser.profile.lastName}`,
+          registrationId: newUser.registration.registrationId,
+          registrationType: newUser.registration.type,
+          workshopSelections: registration?.workshopSelections || [],
+          accompanyingPersons: registration?.accompanyingPersons?.length || 0
+        })
+      } catch (emailError) {
+        console.error('Failed to send registration email:', emailError)
+        // Don't fail the registration if email fails
+      }
+    } else {
+      console.log('Skipping confirmation email for complementary/sponsored user:', newUser.email)
     }
 
     return NextResponse.json({

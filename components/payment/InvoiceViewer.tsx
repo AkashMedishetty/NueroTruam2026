@@ -226,7 +226,7 @@ export function InvoiceViewer({ invoiceData, onDownload }: InvoiceViewerProps) {
           <div className="text-center space-y-2 print:block hidden">
             <h1 className="text-2xl font-bold">NeuroTrauma 2026 Conference</h1>
             <p className="text-gray-600">Annual Conference of the Neurotrauma Society of India</p>
-            <p className="text-sm text-gray-500">March 15-17, 2026 | Hyderabad, Telangana</p>
+            <p className="text-sm text-gray-500">August 7-9, 2026 | Hyderabad, Telangana</p>
           </div>
 
           {/* Invoice Details */}
@@ -304,7 +304,7 @@ export function InvoiceViewer({ invoiceData, onDownload }: InvoiceViewerProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Conference Dates:</span>
-                <span>March 15-17, 2026</span>
+                <span>August 7-9, 2026</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Venue:</span>

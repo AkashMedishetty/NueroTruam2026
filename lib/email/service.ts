@@ -3,7 +3,9 @@ import {
   getRegistrationConfirmationTemplate, 
   getPaymentConfirmationTemplate, 
   getPasswordResetTemplate,
-  getBulkEmailTemplate 
+  getBulkEmailTemplate,
+  getPaymentReminderTemplate,
+  getCustomMessageTemplate
 } from './templates'
 import { getEmailConfig } from '@/lib/config'
 
@@ -146,6 +148,74 @@ export class EmailService {
   }
 
   /**
+   * Send payment reminder email
+   */
+  static async sendPaymentReminder(userData: {
+    email: string
+    name: string
+    registrationId: string
+    registrationType: string
+    daysOverdue?: number
+    amount?: number
+    currency?: string
+  }) {
+    try {
+      const emailConfig = await getEmailConfig()
+      const template = emailConfig?.templates?.paymentReminder
+      
+      if (!template?.enabled) {
+        console.log('Payment reminder email template is disabled')
+        return { success: false, message: 'Email template disabled' }
+      }
+
+      const html = getPaymentReminderTemplate(userData)
+      
+      return await sendEmail({
+        to: userData.email,
+        subject: template.subject || 'Payment Reminder - NeuroTrauma 2026',
+        html,
+        text: `Payment reminder for ${userData.name}. Registration ID: ${userData.registrationId}`
+      })
+    } catch (error) {
+      console.error('Error sending payment reminder:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  /**
+   * Send custom message email
+   */
+  static async sendCustomMessage(messageData: {
+    email: string
+    recipientName: string
+    subject: string
+    content: string
+    senderName?: string
+  }) {
+    try {
+      const emailConfig = await getEmailConfig()
+      const template = emailConfig?.templates?.customMessage
+      
+      if (!template?.enabled) {
+        console.log('Custom message email template is disabled')
+        return { success: false, message: 'Email template disabled' }
+      }
+
+      const html = getCustomMessageTemplate(messageData)
+      
+      return await sendEmail({
+        to: messageData.email,
+        subject: messageData.subject,
+        html,
+        text: messageData.content
+      })
+    } catch (error) {
+      console.error('Error sending custom message:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  /**
    * Send conference reminder email
    */
   static async sendConferenceReminder(userData: {
@@ -173,7 +243,7 @@ export class EmailService {
           <h3>Your Registration Details:</h3>
           <p><strong>Registration ID:</strong> ${userData.registrationId}</p>
           <p><strong>Conference Dates:</strong> August 7-9, 2026</p>
-          <p><strong>Venue:</strong> Hyderabad International Convention Center</p>
+          <p><strong>Venue:</strong> The Park Hotel, Somajiguda, Hyderabad</p>
         </div>
         
         <p><strong>What to expect:</strong></p>

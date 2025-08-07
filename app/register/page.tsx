@@ -1359,6 +1359,107 @@ export default function RegisterPage() {
           </div>
         </section>
 
+        {/* Independence Day Special Offer */}
+        {new Date() <= new Date('2025-08-15') && (
+          <section className="py-8 mx-4 sm:mx-6 lg:mx-8">
+            <div className="container mx-auto px-4 sm:px-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="max-w-2xl mx-auto"
+              >
+                {/* Independence Day Special */}
+                  <div className="relative overflow-hidden rounded-xl shadow-lg">
+                    {/* Slanted Waving Indian Flag Background */}
+                    <div className="absolute inset-0">
+                      {/* Orange Stripe with Wave */}
+                      <div 
+                        className="absolute top-0 left-0 w-full h-1/3 transform -skew-y-2 origin-top-left"
+                        style={{
+                          background: 'linear-gradient(135deg, #ff9933 0%, #ff6b35 50%, #ff9933 100%)',
+                          backgroundSize: '200% 200%',
+                          animation: 'gradientShift 4s ease-in-out infinite, wave 3s ease-in-out infinite'
+                        }}
+                      ></div>
+                      
+                      {/* White Stripe with Wave */}
+                      <div 
+                        className="absolute top-1/3 left-0 w-full h-1/3 transform -skew-y-2 origin-center"
+                        style={{
+                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%)',
+                          backgroundSize: '200% 200%',
+                          animation: 'gradientShift 4s ease-in-out infinite 0.5s, wave 3s ease-in-out infinite 0.5s'
+                        }}
+                      ></div>
+                      
+                      {/* Green Stripe with Wave */}
+                      <div 
+                        className="absolute top-2/3 left-0 w-full h-1/3 transform -skew-y-2 origin-bottom-left"
+                        style={{
+                          background: 'linear-gradient(135deg, #138808 0%, #16a085 50%, #138808 100%)',
+                          backgroundSize: '200% 200%',
+                          animation: 'gradientShift 4s ease-in-out infinite 1s, wave 3s ease-in-out infinite 1s'
+                        }}
+                      ></div>
+                      
+                      {/* Flowing Wave Overlay */}
+                      <div 
+                        className="absolute inset-0 opacity-30"
+                        style={{
+                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                          animation: 'flowingWave 3s linear infinite'
+                        }}
+                      ></div>
+                    </div>
+                    
+                    {/* Content Overlay */}
+                    <div className="relative bg-black/40 backdrop-blur-sm p-6 text-white">
+                      <div className="text-center mb-4">
+                        <div className="text-center mb-3">
+                          <h3 className="text-2xl font-bold text-white drop-shadow-lg">Independence Day Special</h3>
+                          <p className="text-sm text-white/90 drop-shadow">Celebrate freedom with exclusive pricing!</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-6xl font-black mb-2 text-white drop-shadow-lg">₹5,000</div>
+                          <div className="bg-white/30 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-semibold inline-block text-white border border-white/30">
+                            Registration Fee
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center space-y-3">
+                        <p className="text-base text-white/95 drop-shadow">Special Independence Day pricing for conference registration</p>
+                        <p className="text-sm text-white/90 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full inline-block border border-white/30">
+                          Valid until August 15, 2025 • Limited time offer
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Required CSS Styles */}
+                    <style jsx>{`
+                      @keyframes gradientShift {
+                        0%, 100% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                      }
+                      
+                      @keyframes wave {
+                        0%, 100% { transform: translateY(0px) skewY(-2deg); }
+                        25% { transform: translateY(-2px) skewY(-1deg); }
+                        50% { transform: translateY(-4px) skewY(0deg); }
+                        75% { transform: translateY(-2px) skewY(-1deg); }
+                      }
+                      
+                      @keyframes flowingWave {
+                        0% { transform: translateX(-100%) rotate(-45deg); }
+                        100% { transform: translateX(200%) rotate(-45deg); }
+                      }
+                    `}</style>
+                  </div>
+              </motion.div>
+            </div>
+          </section>
+        )}
+
         {/* Sign In Link */}
         <div className="text-center py-4">
           <p className="text-gray-600">

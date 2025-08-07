@@ -332,7 +332,7 @@ export function UserDashboard() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-400" />
-                      <span>March 15-17, 2026</span>
+                      <span>August 7-9, 2026</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />

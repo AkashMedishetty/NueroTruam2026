@@ -445,7 +445,6 @@ html {
 
 /* 3D Canvas Mobile Touch Optimization */
 canvas {
-  touch-action: auto !important;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -457,28 +456,31 @@ canvas {
 /* Ensure page scrolling works over 3D models on mobile */
 @media (max-width: 768px) {
   .three-canvas-container {
-    touch-action: pan-y pinch-zoom;
-    overflow: hidden;
+    touch-action: pan-y pan-x;
+    overflow: visible;
+    pointer-events: none; /* Disable all pointer events on mobile */
   }
   
-  /* Enable 3D model interaction on mobile */
+  /* Disable 3D model interaction on mobile to allow scroll */
   canvas {
-    pointer-events: auto;
-    touch-action: pan-y pinch-zoom;
+    pointer-events: none !important;
+    touch-action: pan-y pan-x !important;
   }
   
-  /* Ensure 3D models are interactive on mobile */
+  /* Ensure 3D models don't capture touch events on mobile */
   .mobile-3d-model {
-    pointer-events: auto;
+    pointer-events: none !important;
+    touch-action: pan-y pan-x !important;
   }
   
   .mobile-3d-model canvas {
-    pointer-events: auto;
+    pointer-events: none !important;
+    touch-action: pan-y pan-x !important;
   }
   
-  /* Ensure mobile fallback components are interactive */
-  .mobile-3d-model .mobile-fallback {
-    pointer-events: auto;
+  /* Allow scroll to pass through 3D model containers */
+  .mobile-3d-model * {
+    pointer-events: none !important;
   }
 }
 
@@ -526,4 +528,43 @@ canvas {
 
 .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(45deg, #e55a2b, #d44a1f);
+}
+
+/* Mobile scroll fix for 3D models */
+@media (max-width: 768px) {
+  /* Ensure body scroll is not blocked */
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y pan-x;
+  }
+  
+  /* Make sure 3D model containers allow scroll to pass through */
+  .three-canvas-container,
+  .mobile-3d-model {
+    position: relative;
+    z-index: 1;
+    pointer-events: none !important;
+    touch-action: pan-y pan-x !important;
+  }
+  
+  /* Ensure all children of 3D containers don't block scroll - but only canvas elements */
+  .three-canvas-container canvas,
+  .three-canvas-container canvas *,
+  .mobile-3d-model canvas,
+  .mobile-3d-model canvas * {
+    pointer-events: none !important;
+    touch-action: pan-y pan-x !important;
+  }
+  
+  /* Allow text and buttons to be interactive, but not 3D models */
+  .three-canvas-container button,
+  .three-canvas-container a,
+  .three-canvas-container input,
+  .mobile-3d-model button,
+  .mobile-3d-model a,
+  .mobile-3d-model input {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
 }

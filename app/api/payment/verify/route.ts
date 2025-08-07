@@ -248,33 +248,52 @@ export async function POST(request: NextRequest) {
 
     await paymentRecord.save()
 
+    // Update workshop seats - confirm the bookings
+    if (user.registration.workshopSelections && user.registration.workshopSelections.length > 0) {
+      const Workshop = (await import('@/lib/models/Workshop')).default
+      
+      for (const workshopId of user.registration.workshopSelections) {
+        const workshop = await Workshop.findOne({ id: workshopId })
+        if (workshop && workshop.bookedSeats < workshop.maxSeats) {
+          await Workshop.findByIdAndUpdate(
+            workshop._id,
+            { $inc: { bookedSeats: 1 } }
+          )
+        }
+      }
+    }
+
     // Update user registration status
     user.registration.status = 'paid'
     user.registration.paymentDate = new Date()
     await user.save()
 
-    // Send payment confirmation email
-    try {
-      const { EmailService } = await import('@/lib/email/service')
-      await EmailService.sendPaymentConfirmation({
-        email: user.email,
-        name: `${user.profile.firstName} ${user.profile.lastName}`,
-        registrationId: user.registration.registrationId,
-        amount: calculationData.amount.total,
-        currency: calculationData.amount.currency,
-        transactionId: razorpay_payment_id,
-        paymentDate: new Date().toLocaleDateString('en-IN'),
-        breakdown: {
-          registration: calculationData.amount.registration,
-          workshops: calculationData.amount.workshops,
-          accompanyingPersons: calculationData.amount.accompanyingPersons,
-          discount: calculationData.amount.discount
-        }
-      })
-      console.log('Payment confirmation email sent successfully to:', user.email)
-    } catch (emailError) {
-      console.error('Failed to send payment confirmation email:', emailError)
-      // Don't fail the payment verification if email fails
+    // Send payment confirmation email (skip for complementary and sponsored users)
+    if (user.registration.paymentType !== 'complementary' && user.registration.paymentType !== 'sponsored') {
+      try {
+        const { EmailService } = await import('@/lib/email/service')
+        await EmailService.sendPaymentConfirmation({
+          email: user.email,
+          name: `${user.profile.firstName} ${user.profile.lastName}`,
+          registrationId: user.registration.registrationId,
+          amount: calculationData.amount.total,
+          currency: calculationData.amount.currency,
+          transactionId: razorpay_payment_id,
+          paymentDate: new Date().toLocaleDateString('en-IN'),
+          breakdown: {
+            registration: calculationData.amount.registration,
+            workshops: calculationData.amount.workshops,
+            accompanyingPersons: calculationData.amount.accompanyingPersons,
+            discount: calculationData.amount.discount
+          }
+        })
+        console.log('Payment confirmation email sent successfully to:', user.email)
+      } catch (emailError) {
+        console.error('Failed to send payment confirmation email:', emailError)
+        // Don't fail the payment verification if email fails
+      }
+    } else {
+      console.log('Skipping email for complementary/sponsored user:', user.email)
     }
 
     return NextResponse.json({

@@ -77,17 +77,16 @@ interface Registration {
   registration: {
     type: string
     status: string
-    paymentStatus: string
     workshopSelections: string[]
     accompanyingPersons: any[]
     registrationDate: string
     paymentDate?: string
+    paymentType?: 'regular' | 'complementary' | 'sponsored'
+    sponsorName?: string
+    sponsorCategory?: string
+    paymentRemarks?: string
   }
-  paymentAmount?: number
   adminRemarks?: string
-  isComplimentary?: boolean
-  isSponsored?: boolean
-  sponsorName?: string
   role: string
   createdAt: string
 }
@@ -99,6 +98,7 @@ export function EnhancedAdminPanel() {
   const [filteredRegistrations, setFilteredRegistrations] = useState<Registration[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -113,7 +113,7 @@ export function EnhancedAdminPanel() {
 
   useEffect(() => {
     filterRegistrations()
-  }, [registrations, searchTerm, statusFilter])
+  }, [registrations, searchTerm, statusFilter, paymentTypeFilter])
 
   const fetchRegistrations = async () => {
     try {
@@ -152,6 +152,28 @@ export function EnhancedAdminPanel() {
     // Status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter(reg => reg.registration.status === statusFilter)
+    }
+
+    // Payment type filter
+    if (paymentTypeFilter !== "all") {
+      if (paymentTypeFilter === "complementary") {
+        filtered = filtered.filter(reg => 
+          reg.registration.type === 'complimentary' || 
+          reg.registration.paymentType === 'complementary'
+        )
+      } else if (paymentTypeFilter === "sponsored") {
+        filtered = filtered.filter(reg => 
+          reg.registration.type === 'sponsored' || 
+          reg.registration.paymentType === 'sponsored'
+        )
+      } else if (paymentTypeFilter === "regular") {
+        filtered = filtered.filter(reg => 
+          reg.registration.paymentType === 'regular' || 
+          (!reg.registration.paymentType && 
+           reg.registration.type !== 'complimentary' && 
+           reg.registration.type !== 'sponsored')
+        )
+      }
     }
 
     setFilteredRegistrations(filtered)
@@ -219,16 +241,35 @@ export function EnhancedAdminPanel() {
     if (!selectedRegistration) return
 
     try {
+      // Prepare update data with correct field mapping
+      const updateData: any = {
+        adminRemarks,
+        'registration.status': isComplimentary || isSponsored ? 'paid' : selectedRegistration.registration.status
+      }
+
+      // Set registration type and payment type based on selection
+      if (isComplimentary) {
+        updateData['registration.type'] = 'complimentary'
+        updateData['registration.paymentType'] = 'complementary'
+        updateData['registration.paymentDate'] = new Date().toISOString()
+        updateData['registration.sponsorName'] = ''
+        updateData['registration.sponsorCategory'] = ''
+      } else if (isSponsored) {
+        updateData['registration.type'] = 'sponsored'
+        updateData['registration.paymentType'] = 'sponsored'
+        updateData['registration.paymentDate'] = new Date().toISOString()
+        updateData['registration.sponsorName'] = sponsorName
+      } else {
+        // Reset to regular if neither complementary nor sponsored
+        updateData['registration.paymentType'] = 'regular'
+        updateData['registration.sponsorName'] = ''
+        updateData['registration.sponsorCategory'] = ''
+      }
+
       const response = await fetch(`/api/admin/registrations/${selectedRegistration._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adminRemarks,
-          isComplimentary,
-          isSponsored,
-          sponsorName: isSponsored ? sponsorName : "",
-          status: isComplimentary || isSponsored ? 'confirmed' : selectedRegistration.registration.status
-        })
+        body: JSON.stringify(updateData)
       })
 
       if (response.ok) {
@@ -262,9 +303,9 @@ export function EnhancedAdminPanel() {
   const openEditModal = (registration: Registration) => {
     setSelectedRegistration(registration)
     setAdminRemarks(registration.adminRemarks || "")
-    setIsComplimentary(registration.isComplimentary || false)
-    setIsSponsored(registration.isSponsored || false)
-    setSponsorName(registration.sponsorName || "")
+    setIsComplimentary(registration.registration.type === 'complimentary' || registration.registration.paymentType === 'complementary')
+    setIsSponsored(registration.registration.type === 'sponsored' || registration.registration.paymentType === 'sponsored')
+    setSponsorName(registration.registration.sponsorName || "")
     setIsEditModalOpen(true)
   }
 
@@ -294,8 +335,8 @@ export function EnhancedAdminPanel() {
     total: registrations.length,
     confirmed: registrations.filter(r => r.registration.status === 'confirmed' || r.registration.status === 'paid').length,
     pending: registrations.filter(r => r.registration.status === 'pending').length,
-    complimentary: registrations.filter(r => r.isComplimentary).length,
-    sponsored: registrations.filter(r => r.isSponsored).length
+    complimentary: registrations.filter(r => r.registration.type === 'complimentary' || r.registration.paymentType === 'complementary').length,
+    sponsored: registrations.filter(r => r.registration.type === 'sponsored' || r.registration.paymentType === 'sponsored').length
   }
 
   if (loading) {
@@ -416,6 +457,17 @@ export function EnhancedAdminPanel() {
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by payment type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Payment Types</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+                <SelectItem value="complementary">Complementary</SelectItem>
+                <SelectItem value="sponsored">Sponsored</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -481,13 +533,13 @@ export function EnhancedAdminPanel() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        {registration.isComplimentary && (
+                        {(registration.registration.type === 'complimentary' || registration.registration.paymentType === 'complementary') && (
                           <Badge variant="secondary" className="text-xs">
                             <Gift className="h-3 w-3 mr-1" />
                             Comp
                           </Badge>
                         )}
-                        {registration.isSponsored && (
+                        {(registration.registration.type === 'sponsored' || registration.registration.paymentType === 'sponsored') && (
                           <Badge variant="secondary" className="text-xs">
                             <Award className="h-3 w-3 mr-1" />
                             Sponsor

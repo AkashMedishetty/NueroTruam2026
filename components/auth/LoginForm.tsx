@@ -68,10 +68,54 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           description: "Welcome back! Redirecting to your dashboard...",
         });
 
-        // Simple, fast redirect
-        setTimeout(() => {
-          router.push(callbackUrl);
-        }, 100);
+        // Wait for session to be confirmed before redirecting
+        const checkSessionAndRedirect = async () => {
+          let attempts = 0;
+          const maxAttempts = 10;
+          
+          const checkSession = async () => {
+            try {
+              const response = await fetch('/api/auth/session');
+              const session = await response.json();
+              
+              console.log('Session check attempt:', attempts, 'Session:', session);
+              
+              if (session && session.user) {
+                // Session confirmed, safe to redirect
+                console.log('Session confirmed, redirecting to:', callbackUrl);
+                window.location.href = callbackUrl;
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error('Session check error:', error);
+              return false;
+            }
+          };
+          
+          // Poll for session confirmation
+          const pollSession = async () => {
+            attempts++;
+            const sessionExists = await checkSession();
+            
+            if (sessionExists) {
+              return; // Success, redirect happened
+            }
+            
+            if (attempts < maxAttempts) {
+              setTimeout(pollSession, 300); // Check every 300ms
+            } else {
+              // Fallback: force redirect anyway after 3 seconds
+              console.warn('Session confirmation timeout, forcing redirect');
+              window.location.href = callbackUrl;
+            }
+          };
+          
+          // Start polling after a short delay
+          setTimeout(pollSession, 200);
+        };
+        
+        checkSessionAndRedirect();
       }
     } catch (error) {
       setError("An unexpected error occurred");

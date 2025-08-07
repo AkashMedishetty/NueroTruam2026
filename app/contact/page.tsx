@@ -411,7 +411,7 @@ export default function ContactPage() {
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800 dark:text-white">Find Us</h2>
               <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-sm md:text-base">
-                The conference will be held at the Hyderabad International Convention Center.
+                The conference will be held at The Park Hotel, Somajiguda, Hyderabad.
               </p>
             </motion.div>
 
@@ -421,7 +421,7 @@ export default function ContactPage() {
                 <div className="text-center">
                   <MapPin className="w-10 h-10 md:w-12 md:h-12 text-orange-600 dark:text-orange-400 mx-auto mb-4" />
                   <p className="text-gray-700 dark:text-gray-200 font-semibold text-sm md:text-base">Interactive Map Placeholder</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">Hyderabad International Convention Center</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">The Park Hotel, Somajiguda, Hyderabad</p>
                 </div>
               </div>
             </div>

@@ -5,15 +5,15 @@ import { useSession, signOut } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  Menu, 
-  X, 
-  Sun, 
-  Moon, 
-  Monitor, 
-  User, 
-  LogOut, 
-  Settings, 
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Monitor,
+  User,
+  LogOut,
+  Settings,
   CreditCard,
   FileText,
   Bell,
@@ -28,7 +28,8 @@ import {
   BookOpen,
   UserCheck,
   Shield,
-  ChevronDown
+  ChevronDown,
+  ArrowRight
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
@@ -120,10 +121,10 @@ function UserMenu({ userData }: { userData: any }) {
         method: 'POST',
         credentials: 'include'
       })
-      
+
       // Then sign out from NextAuth
       await signOut({ redirect: false })
-      
+
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account."
@@ -266,19 +267,14 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center space-x-3"
+                className="flex items-center"
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">NT</span>
-                </div>
-                <div className="hidden sm:block">
-                  <div className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-                    NeuroTrauma 2026
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    Neurotrauma Society of India
-                  </div>
-                </div>
+                {/* Use the same logo as main page */}
+                <img
+                  src="/NueroTraumalogo.png"
+                  alt="NeuroTrauma 2026 Logo"
+                  className="h-12 lg:h-16 w-auto object-contain"
+                />
               </motion.div>
             </Link>
 
@@ -303,11 +299,10 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                   <Link key={item.name} href={item.href}>
                     <Button
                       variant="ghost"
-                      className={`text-sm font-medium transition-all duration-200 ${
-                        isActivePage(item.href)
-                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 shadow-md"
-                          : "hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 dark:hover:text-orange-400"
-                      }`}
+                      className={`text-sm font-medium transition-all duration-200 ${isActivePage(item.href)
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 shadow-md"
+                        : "hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 dark:hover:text-orange-400"
+                        }`}
                     >
                       <Icon className="w-4 h-4 mr-2" />
                       {item.name}
@@ -326,9 +321,9 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                   <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
                 </Button>
               )}
-              
+
               <ThemeToggle />
-              
+
               {session ? (
                 <UserMenu userData={userData} />
               ) : (
@@ -399,11 +394,10 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                         <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
                           <Button
                             variant="ghost"
-                            className={`w-full justify-start text-left h-12 transition-all duration-200 ${
-                              isActivePage(item.href)
-                                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
-                                : "hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 dark:hover:text-orange-400"
-                            }`}
+                            className={`w-full justify-start text-left h-12 transition-all duration-200 ${isActivePage(item.href)
+                              ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                              : "hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 dark:hover:text-orange-400"
+                              }`}
                           >
                             <Icon className="w-4 h-4 mr-3" />
                             {item.name}
@@ -449,8 +443,8 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                       <div className="flex items-center space-x-3 px-3 py-2">
                         <Avatar className="h-10 w-10">
                           <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-600 text-white">
-                            {userData.profile ? 
-                              `${userData.profile.firstName?.charAt(0) || ''}${userData.profile.lastName?.charAt(0) || ''}`.toUpperCase() 
+                            {userData.profile ?
+                              `${userData.profile.firstName?.charAt(0) || ''}${userData.profile.lastName?.charAt(0) || ''}`.toUpperCase()
                               : 'U'
                             }
                           </AvatarFallback>
@@ -464,7 +458,7 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                           </p>
                         </div>
                       </div>
-                      
+
                       {userData.role === 'admin' && (
                         <Link href="/admin" onClick={() => setIsMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start h-12">
@@ -473,9 +467,9 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                           </Button>
                         </Link>
                       )}
-                      
-                      <Button 
-                        variant="ghost" 
+
+                      <Button
+                        variant="ghost"
                         className="w-full justify-start h-12 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                         onClick={async () => {
                           setIsMenuOpen(false)
@@ -485,7 +479,7 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
                               method: 'POST',
                               credentials: 'include'
                             })
-                            
+
                             // Then sign out from NextAuth
                             await signOut({ redirect: false })
                             router.push('/')
@@ -514,100 +508,178 @@ export function MainLayout({ children, currentPage, showSearch = false }: MainLa
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-gray-950 text-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Conference Info */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">NT</span>
+      {/* Comprehensive Footer - Same as main page */}
+      <footer className="bg-gradient-to-br from-gray-900 to-black text-white py-20">
+        <div className="container mx-auto px-6">
+          {/* Organizers Section */}
+          <div className="mb-16">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold mb-8 text-orange-400 leading-relaxed">Organized By</h3>
+              <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
+                {/* Neurotrauma Society of India */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img
+                    src="/NTSILOGO.png"
+                    alt="Neurotrauma Society of India"
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">Neurotrauma Society of India</p>
                 </div>
-                <div className="text-lg font-bold">NeuroTrauma 2026</div>
-              </div>
-              <p className="text-sm text-gray-400">
-                Annual Conference of the Neurotrauma Society of India
-              </p>
-              <div className="space-y-2 text-sm text-gray-400">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>March 15-17, 2026</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>Hyderabad, Telangana</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Quick Links</h3>
-              <div className="space-y-2">
-                <Link href="/program" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Conference Program
-                </Link>
-                <Link href="/abstracts" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Abstract Submission
-                </Link>
-                <Link href="/venue" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Venue Information
-                </Link>
-                <Link href="/committee" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Organizing Committee
-                </Link>
-              </div>
-            </div>
-
-            {/* Registration */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Registration</h3>
-              <div className="space-y-2">
-                <Link href="/register" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Register Now
-                </Link>
-                <Link href="/auth/login" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Login to Dashboard
-                </Link>
-                <Link href="/dashboard/payment" className="block text-sm text-gray-400 hover:text-white transition-colors">
-                  Payment Information
-                </Link>
-              </div>
-            </div>
-
-            {/* Contact */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Contact Us</h3>
-              <div className="space-y-2 text-sm text-gray-400">
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4" />
-                  <span>info@neurotraumacon2026.com</span>
+                {/* Brain and Spine Society */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img
+                    src="/brainandspinesociety.png"
+                    alt="Brain and Spine Society(BASS)"
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">Brain and Spine Society(BASS)</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4" />
-                  <span>+91-9999999999</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>Hyderabad, Telangana, India</span>
+
+                {/* KIMS Hospitals */}
+                <div className="flex flex-col items-center space-y-4">
+                  <img
+                    src="/KIMS.png"
+                    alt="KIMS Hospitals"
+                    className="h-20 w-auto object-contain"
+                  />
+                  <p className="text-gray-300 text-center font-medium">KIMS Hospitals</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <div className="text-sm text-gray-400">
-              © 2026 NeuroTrauma Society of India. All rights reserved.
+          {/* Main Footer Content */}
+          <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-8 mb-16">
+            {/* Conference Info */}
+            <div className="md:col-span-2 lg:col-span-1">
+              <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent leading-tight py-2">
+                NEUROTRAUMA 2026
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Science, Sports & Spiritually through innovation, collaboration, and excellence. Join us in Hyderabad for three transformative days of medical learning.
+              </p>
+              <div className="space-y-2 text-gray-400">
+                <p className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 text-orange-500" />
+                  August 7-9, 2026
+                </p>
+                <p className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-2 text-orange-500" />
+                  Hyderabad, India
+                </p>
+                <p className="flex items-center">
+                  <Users className="w-4 h-4 mr-2 text-orange-500" />
+                  400+ Expected Delegates
+                </p>
+              </div>
             </div>
-            <div className="flex items-center space-x-4 mt-4 md:mt-0">
-              <Link href="/privacy-policy" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms-conditions" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Terms of Service
-              </Link>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Quick Links</h4>
+              <ul className="space-y-3 text-gray-300">
+                {[
+                  { name: "About Conference", href: "/" },
+                  { name: "Scientific Program", href: "/program" },
+                  { name: "Registration", href: "/register" },
+                  { name: "Abstracts", href: "/abstracts" },
+                  { name: "Venue Information", href: "/venue" },
+                  { name: "Local Tourism", href: "/" }
+                ].map((item) => (
+                  <li key={item.name}>
+                    <Link href={item.href} className="hover:text-orange-400 transition-colors duration-300 flex items-center">
+                      <ArrowRight className="w-3 h-3 mr-2" />
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact Information */}
+            <div>
+              <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Contact Information</h4>
+
+              <div className="mb-6">
+                <h5 className="font-semibold text-white mb-2">Conference Secretariat</h5>
+                <p className="text-gray-300 text-sm">Dr. Raghavendra H</p>
+                <p className="text-gray-400 text-sm">Conference Secretariat</p>
+                <p className="text-gray-400 text-sm">Hyderabad, India 500001</p>
+              </div>
+            </div>
+
+            {/* Conference Manager */}
+            <div>
+              <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Conference Manager</h4>
+
+              <div className="mb-6">
+                <h5 className="font-semibold text-white mb-2">Mr. Kiran Kumar Lella</h5>
+                <p className="text-gray-400 text-sm mb-2">Conference Manager</p>
+                <p className="text-gray-300 text-sm mb-1">Mobile: +91 – 9676541985</p>
+                <p className="text-gray-300 text-sm mb-4">Email: kiran@cmchyd.com</p>
+
+                {/* CMC Logo under Conference Manager */}
+                <div className="flex items-center mt-4">
+                  <img
+                    src="/CMC Logo Footer.png"
+                    alt="CMC Logo"
+                    className="h-36 w-auto object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Social Media & Follow */}
+            <div>
+              <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Follow Us</h4>
+              <div className="flex space-x-4 mb-8">
+                {[
+                  { logo: "/LinkedIn_logo_initials.png", label: "LinkedIn" },
+                  { logo: "/Logo_of_Twitter.png", label: "Twitter" },
+                  { logo: "/Facebook_Logo_(2019).png", label: "Facebook" },
+                  { logo: "/Instagram_icon.png", label: "Instagram" },
+                  { logo: "/Youtube_logo.png", label: "YouTube" }
+                ].map((social, index) => (
+                  <motion.div
+                    key={index}
+                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer p-1"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={social.label}
+                  >
+                    <img
+                      src={social.logo}
+                      alt={social.label}
+                      className="w-6 h-6 object-contain"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+
+              <div>
+                <h5 className="font-semibold text-white mb-4">Tech Partner</h5>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                    PurpleHat Events
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Footer */}
+          <div className="border-t border-gray-700 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="text-gray-400 text-sm">
+                <p>&copy; 2026 NeuroTrauma Conference. All rights reserved.</p>
+                <p>Hyderabad, India</p>
+              </div>
+              <div className="flex space-x-6 text-gray-400 text-sm">
+                <Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link>
+                <Link href="/terms-conditions" className="hover:text-orange-400 transition-colors">Terms & Conditions</Link>
+                <Link href="/cookies-policy" className="hover:text-orange-400 transition-colors">Cookies Policy</Link>
+              </div>
             </div>
           </div>
         </div>

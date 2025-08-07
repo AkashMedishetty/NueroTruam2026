@@ -46,20 +46,24 @@ export async function POST(request: NextRequest) {
 
     await User.findByIdAndUpdate(registrationId, { $set: updateData })
 
-    // Send confirmation email
-    try {
-      const { EmailService } = await import('@/lib/email/service')
-      await EmailService.sendRegistrationConfirmation({
-        email: user.email,
-        name: `${user.profile.firstName} ${user.profile.lastName}`,
-        registrationId: user.registration.registrationId,
-        registrationType: user.registration.type,
-        workshopSelections: user.registration.workshopSelections,
-        accompanyingPersons: user.registration.accompanyingPersons
-      })
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError)
-      // Don't fail the acceptance if email fails
+    // Send confirmation email (skip for complementary and sponsored users)
+    if (user.registration.paymentType !== 'complementary' && user.registration.paymentType !== 'sponsored') {
+      try {
+        const { EmailService } = await import('@/lib/email/service')
+        await EmailService.sendRegistrationConfirmation({
+          email: user.email,
+          name: `${user.profile.firstName} ${user.profile.lastName}`,
+          registrationId: user.registration.registrationId,
+          registrationType: user.registration.type,
+          workshopSelections: user.registration.workshopSelections,
+          accompanyingPersons: user.registration.accompanyingPersons
+        })
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError)
+        // Don't fail the acceptance if email fails
+      }
+    } else {
+      console.log('Skipping confirmation email for complementary/sponsored user:', user.email)
     }
 
     return NextResponse.json({

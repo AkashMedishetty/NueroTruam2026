@@ -54,9 +54,15 @@ export async function POST(request: NextRequest) {
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Update user password
-    user.password = hashedPassword
-    await user.save()
+    // Update user password using findByIdAndUpdate to avoid full document validation
+    await User.findByIdAndUpdate(
+      user._id,
+      { password: hashedPassword },
+      { 
+        runValidators: false, // Skip validation for other fields
+        new: true 
+      }
+    )
 
     return NextResponse.json({
       success: true,

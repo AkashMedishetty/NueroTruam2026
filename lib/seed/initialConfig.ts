@@ -174,20 +174,20 @@ export async function seedInitialConfiguration() {
       value: {
         name: 'NeuroTrauma 2026',
         fullName: 'Annual Conference of Neurotrauma Society of India',
-        theme: 'Advancing Neurotrauma Care & Research',
+        theme: 'Science, Sports & Spiritually',
         dates: {
           start: '2026-08-07',
           end: '2026-08-09'
         },
         venue: {
-          name: 'Hyderabad International Convention Center',
+          name: 'The Park Hotel, Somajiguda, Hyderabad',
           city: 'Hyderabad',
           state: 'Telangana',
           country: 'India'
         },
         contact: {
           email: 'info@neurotrauma2026.com',
-          phone: '+91-40-12345678',
+          phone: '+91-9676541985',
           website: 'https://neurotrauma2026.com'
         }
       },

@@ -69,12 +69,12 @@ export default function HomePage() {
       const difference = targetDate - now
 
       if (difference > 0) {
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-      setTimeLeft({ days, hours, minutes, seconds })
+        setTimeLeft({ days, hours, minutes, seconds })
       } else {
         // Conference has started
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -83,7 +83,7 @@ export default function HomePage() {
 
     // Update immediately
     updateCountdown()
-    
+
     // Then update every second
     const timer = setInterval(updateCountdown, 1000)
 
@@ -185,7 +185,7 @@ export default function HomePage() {
                 <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 font-light leading-relaxed">
                   Annual Conference of Neurotrauma Society of India
                   <br />
-                  <span className="text-lg text-orange-600">Advancing Neurotrauma Care & Research</span>
+                  <span className="text-lg text-orange-600">Science, Sports & Spiritually</span>
                 </p>
               </motion.div>
 
@@ -196,16 +196,16 @@ export default function HomePage() {
                 transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
               >
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/register">
-                    <Button className="px-8 py-4 text-lg bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-full shadow-lg hover:shadow-orange-200/50 transition-all duration-300 border-0">
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Register Now
-                    </Button>
-                  </Link>
-                </motion.div>
-                {/* Watch Trailer Button - Commented out as requested */}
-                {/*
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link href="/register">
+                      <Button className="px-8 py-4 text-lg bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-full shadow-lg hover:shadow-orange-200/50 transition-all duration-300 border-0">
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Register Now
+                      </Button>
+                    </Link>
+                  </motion.div>
+                  {/* Watch Trailer Button - Commented out as requested */}
+                  {/*
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href="/program">
                     <Button variant="outline" className="px-8 py-4 text-lg border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-full transition-all duration-300 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-900/20">
@@ -215,7 +215,7 @@ export default function HomePage() {
                   </Link>
                 </motion.div>
                 */}
-              </div>
+                </div>
               </motion.div>
 
               {/* Organized By Section */}
@@ -228,23 +228,23 @@ export default function HomePage() {
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">
                   Organized by
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center justify-items-center">
                   {[
-                    { 
-                      src: "/NTSILOGO.png", 
-                      alt: "Neurotrauma Society of India", 
-                      name: "Neurotrauma Society of India" 
+                    {
+                      src: "/NTSILOGO.png",
+                      alt: "Neurotrauma Society of India",
+                      name: "Neurotrauma Society of India"
                     },
-                    { 
-                      src: "/brainandspinesociety.png", 
-                      alt: "Brain and Spine Society", 
-                      name: "Brain and Spine Society" 
+                    {
+                      src: "/brainandspinesociety.png",
+                      alt: "Brain and Spine Society(BASS)",
+                      name: "Brain and Spine Society(BASS)"
                     },
-                    { 
-                      src: "/KIMS.png", 
-                      alt: "KIMS Hospitals", 
-                      name: "KIMS Hospitals" 
+                    {
+                      src: "/KIMS.png",
+                      alt: "KIMS Hospitals",
+                      name: "KIMS Hospitals"
                     },
                   ].map((org, index) => (
                     <motion.div
@@ -255,7 +255,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
                     >
-                      <img 
+                      <img
                         src={org.src}
                         alt={org.alt}
                         className="h-16 w-auto object-contain filter hover:brightness-110 transition-all duration-300"
@@ -309,16 +309,16 @@ export default function HomePage() {
                   className="relative group"
                   initial={{ scale: 0, rotateY: 180 }}
                   whileInView={{ scale: 1, rotateY: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1, duration: 0.4, ease: "easeOut" }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.4, ease: "easeOut" }}
                   whileHover={{ scale: 1.05, rotateY: 5 }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  <div className="relative bg-white backdrop-blur-xl border border-orange-100 p-8 rounded-3xl hover:border-orange-300 transition-all duration-300 shadow-lg hover:shadow-orange-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:shadow-gray-900">
-                    <div className="text-6xl font-black bg-gradient-to-b from-gray-800 to-gray-900 bg-clip-text text-transparent dark:from-gray-100 dark:to-gray-300 mb-2">
+                  <div className="relative bg-white backdrop-blur-xl border border-orange-100 p-6 sm:p-8 rounded-3xl hover:border-orange-300 transition-all duration-300 shadow-lg hover:shadow-orange-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:shadow-gray-900">
+                    <div className="text-4xl sm:text-5xl lg:text-6xl font-black bg-gradient-to-b from-gray-800 to-gray-900 bg-clip-text text-transparent dark:from-gray-100 dark:to-gray-300 mb-2 leading-none py-2">
                       {item.value.toString().padStart(2, "0")}
                     </div>
-                    <div className="text-sm uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400 font-medium">{item.label}</div>
+                    <div className="text-xs sm:text-sm uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400 font-medium">{item.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -354,38 +354,38 @@ export default function HomePage() {
 
               {/* Right side: Welcome Content - 65% */}
               <div className="lg:w-[65%]">
-              <motion.div
-                className="bg-white rounded-3xl p-8 shadow-2xl border border-orange-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50 flex flex-col justify-center min-h-[600px]"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-              <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Welcome to NeuroTrauma 2026</h3>
-              <div className="prose prose-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                <p className="mb-6">
-                  Dear Healthcare Professionals, Researchers, and Medical Innovators,
-                </p>
-                <p className="mb-6">
-                  We are delighted to welcome you to NeuroTrauma 2026, a premier gathering that represents the pinnacle of neurotrauma medical excellence. This extraordinary conference will bring together the most brilliant minds in neuroscience, emergency medicine, and trauma care under one roof in the historic city of Hyderabad.
-                </p>
-                <p className="mb-6">
-                  For three transformative days, we will explore the frontiers of neurotrauma medicine, from breakthrough surgical techniques and innovative rehabilitation protocols to cutting-edge research in neural regeneration and brain-computer interfaces. Our comprehensive program features world-renowned keynote speakers, interactive workshops, live surgical demonstrations, and unparalleled networking opportunities.
-                </p>
-                <p className="mb-6">
-                  Hyderabad, known as the "City of Pearls" and a burgeoning hub of medical excellence, provides the perfect setting for this monumental event. The city's rich heritage in healthcare innovation and its state-of-the-art medical facilities create an inspiring backdrop for advancing neurotrauma care.
-                </p>
-                <p className="mb-8">
-                  Whether you are a neurosurgeon, emergency physician, researcher, resident, or allied healthcare professional, NeuroTrauma 2026 offers invaluable insights, practical knowledge, and professional connections that will enhance your practice and contribute to better patient outcomes. Join us in shaping the future of neurotrauma medicine and making a lasting impact on countless lives.
-                </p>
-                
-                <div className="border-t border-orange-200 dark:border-gray-600 pt-6">
-                  <p className="font-semibold text-gray-800 dark:text-gray-100">The Organizing Committee</p>
-                  <p className="text-orange-600 dark:text-orange-400">NeuroTrauma Society of India</p>
-                </div>
+                <motion.div
+                  className="bg-white rounded-3xl p-8 shadow-2xl border border-orange-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50 flex flex-col justify-center min-h-[600px]"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Welcome to NeuroTrauma 2026</h3>
+                  <div className="prose prose-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                    <p className="mb-6">
+                      Dear Healthcare Professionals, Researchers, and Medical Innovators,
+                    </p>
+                    <p className="mb-6">
+                      We are delighted to welcome you to NeuroTrauma 2026, a premier gathering that represents the pinnacle of neurotrauma medical excellence. This extraordinary conference will bring together the most brilliant minds in neuroscience, emergency medicine, and trauma care under one roof in the historic city of Hyderabad.
+                    </p>
+                    <p className="mb-6">
+                      For three transformative days, we will explore the frontiers of neurotrauma medicine, from breakthrough surgical techniques and innovative rehabilitation protocols to cutting-edge research in neural regeneration and brain-computer interfaces. Our comprehensive program features world-renowned keynote speakers, interactive workshops, live surgical demonstrations, and unparalleled networking opportunities.
+                    </p>
+                    <p className="mb-6">
+                      Hyderabad, known as the "City of Pearls" and a burgeoning hub of medical excellence, provides the perfect setting for this monumental event. The city's rich heritage in healthcare innovation and its state-of-the-art medical facilities create an inspiring backdrop for advancing neurotrauma care.
+                    </p>
+                    <p className="mb-8">
+                      Whether you are a neurosurgeon, emergency physician, researcher, resident, or allied healthcare professional, NeuroTrauma 2026 offers invaluable insights, practical knowledge, and professional connections that will enhance your practice and contribute to better patient outcomes. Join us in shaping the future of neurotrauma medicine and making a lasting impact on countless lives.
+                    </p>
+
+                    <div className="border-t border-orange-200 dark:border-gray-600 pt-6">
+                      <p className="font-semibold text-gray-800 dark:text-gray-100">The Organizing Committee</p>
+                      <p className="text-orange-600 dark:text-orange-400">NeuroTrauma Society of India</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-            </div>
             </div>
           </div>
         </div>
@@ -434,10 +434,30 @@ export default function HomePage() {
                 whileHover={{ y: -10, scale: 1.02 }}
               >
                 <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-white">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </span>
+                  <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    {member.name === "Dr. Manas Panigrahi" ? (
+                      <img
+                        src="/Dr. Manas P.jpg"
+                        alt="Dr. Manas Panigrahi"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : member.name === "Dr. Raghavendra H" ? (
+                      <img
+                        src="/Dr. R H.jpg"
+                        alt="Dr. Raghavendra H"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : member.name === "Dr. Swetha P" ? (
+                      <img
+                        src="/Dr S P.jpg"
+                        alt="Dr. Swetha P"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl font-bold text-white">
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    )}
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
                     {member.name}
@@ -448,7 +468,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <motion.div 
+          <motion.div
             className="text-center mt-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -471,12 +491,12 @@ export default function HomePage() {
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-10 w-72 h-72 bg-orange-300 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-red-300 rounded-full blur-3xl"></div>
-          </div>
+        </div>
 
         <div className="container mx-auto px-6 relative z-10">
           {/* Header */}
           <div className="text-center mb-16">
-          <motion.div
+            <motion.div
               className="inline-block px-6 py-3 bg-orange-100 dark:bg-orange-900/30 rounded-full mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -486,27 +506,27 @@ export default function HomePage() {
               <span className="text-orange-600 dark:text-orange-400 font-semibold text-sm uppercase tracking-wide">
                 🏛️ Discover the City of Pearls
               </span>
-                </motion.div>
+            </motion.div>
 
-          <motion.h2
+            <motion.h2
               className="text-6xl lg:text-7xl font-black mb-6 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-          >
+            >
               Explore Hyderabad
-          </motion.h2>
+            </motion.h2>
 
-          <motion.p
+            <motion.p
               className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-          >
+            >
               Experience the perfect blend of ancient heritage and modern innovation while attending the conference. From historic monuments to cutting-edge technology hubs.
-          </motion.p>
+            </motion.p>
           </div>
 
           {/* Enhanced Horizontal Scrolling Cards Container */}
@@ -529,14 +549,14 @@ export default function HomePage() {
                   <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse delay-100"></div>
                   <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse delay-200"></div>
-            </div>
-        </div>
+                </div>
+              </div>
             </div>
 
             {/* Enhanced Horizontal Scrolling Container */}
-            <div 
+            <div
               className="overflow-x-auto overflow-y-hidden pb-8 snap-x snap-mandatory cursor-grab active:cursor-grabbing horizontal-scroll-container"
-              style={{ 
+              style={{
                 scrollBehavior: 'smooth',
                 WebkitOverflowScrolling: 'touch',
               }}
@@ -545,13 +565,13 @@ export default function HomePage() {
                 const rect = container.getBoundingClientRect()
                 const mouseX = e.clientX - rect.left
                 const mouseY = e.clientY - rect.top
-                
+
                 // Check if mouse is actually over the scrollable area
                 if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
                   // Always prevent default when over the horizontal scroll area
                   e.preventDefault()
                   e.stopPropagation()
-                  
+
                   // Scroll horizontally
                   container.scrollLeft += e.deltaY * 2
                 }
@@ -561,7 +581,7 @@ export default function HomePage() {
                 let isDown = true
                 let startX = e.pageX - slider.offsetLeft
                 let scrollLeft = slider.scrollLeft
-                
+
                 const handleMouseMove = (e: MouseEvent) => {
                   if (!isDown) return
                   e.preventDefault()
@@ -569,13 +589,13 @@ export default function HomePage() {
                   const walk = (x - startX) * 2
                   slider.scrollLeft = scrollLeft - walk
                 }
-                
+
                 const handleMouseUp = () => {
                   isDown = false
                   document.removeEventListener('mousemove', handleMouseMove)
                   document.removeEventListener('mouseup', handleMouseUp)
                 }
-                
+
                 document.addEventListener('mousemove', handleMouseMove)
                 document.addEventListener('mouseup', handleMouseUp)
               }}
@@ -596,7 +616,7 @@ export default function HomePage() {
                   {
                     name: "Ramoji Film City",
                     description: "World's largest film studio complex and theme park",
-                    category: "Entertainment", 
+                    category: "Entertainment",
                     rating: "4.6",
                     time: "Full day",
                     bestTime: "Morning",
@@ -619,7 +639,7 @@ export default function HomePage() {
                     name: "Hussain Sagar Lake",
                     description: "Heart-shaped lake with beautiful Buddha statue",
                     category: "Nature",
-                    rating: "4.5", 
+                    rating: "4.5",
                     time: "1-2 hours",
                     bestTime: "Evening",
                     highlights: ["Boat Rides", "Buddha Statue", "Lake Views"],
@@ -631,7 +651,7 @@ export default function HomePage() {
                     description: "One of India's largest museums with rare artifacts",
                     category: "Culture",
                     rating: "4.4",
-                    time: "2-3 hours", 
+                    time: "2-3 hours",
                     bestTime: "Morning",
                     highlights: ["Rare Artifacts", "Art Collections", "Historical Items"],
                     icon: "🏛️",
@@ -660,33 +680,33 @@ export default function HomePage() {
                     image: "/birlamandir.jpg"
                   }
                 ].map((place, index) => (
-                <motion.div
-                  key={index}
+                  <motion.div
+                    key={index}
                     className="relative group w-80 h-[500px] flex-shrink-0 snap-center"
                     initial={{ opacity: 0, x: 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
                   >
                     {/* Full Image Card with Simple Overlay */}
                     <div className="attraction-card relative w-full h-full rounded-3xl shadow-2xl overflow-hidden border border-white/20 transition-all duration-200 ease-out hover:shadow-orange-500/20">
                       {/* Full Background Image */}
-                      <img 
-                        src={place.image} 
+                      <img
+                        src={place.image}
                         alt={place.name}
                         className="absolute inset-0 w-full h-full object-cover"
                       />
-                      
+
                       {/* Dark Overlay for Better Text Readability */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                      
+
                       {/* Top Badges */}
                       <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
                         {/* Category Badge */}
                         <div className="px-3 py-1 bg-white/90 rounded-full">
                           <span className="text-xs font-bold text-gray-800">{place.category}</span>
                         </div>
-                        
+
                         {/* Rating Badge */}
                         <div className="px-3 py-1 bg-white/90 rounded-full flex items-center space-x-1">
                           <span className="text-yellow-500">⭐</span>
@@ -724,7 +744,7 @@ export default function HomePage() {
                           </div>
 
                           {/* Learn More Button */}
-                          <button 
+                          <button
                             onClick={() => handleLearnMore(place)}
                             className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105"
                           >
@@ -732,8 +752,8 @@ export default function HomePage() {
                           </button>
                         </div>
                       </div>
-            </div>
-          </motion.div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -755,45 +775,45 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
             >
               <span className="text-orange-600 dark:text-orange-400 font-semibold text-sm uppercase tracking-wide">
-                💰 Early Bird Registration Open
+                🇮🇳 Independence Day Offer
               </span>
             </motion.div>
 
-          <motion.h2
+            <motion.h2
               className="text-5xl lg:text-6xl font-black mb-6 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-          >
+            >
               Secure Your Spot
-          </motion.h2>
+            </motion.h2>
 
-          <motion.p
+            <motion.p
               className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-          >
+            >
               Join leading neurotrauma professionals for three days of groundbreaking sessions, hands-on workshops, and networking opportunities.
-          </motion.p>
+            </motion.p>
 
             {/* Registration Card */}
-          <motion.div
+            <motion.div
               className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-800 rounded-3xl p-8 shadow-2xl border border-orange-200 dark:border-gray-700 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div className="text-center mb-8">
                 <div className="text-6xl font-black bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent mb-4">
                   ₹5,000
-                      </div>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Early Bird Registration</h3>
-                <p className="text-gray-600 dark:text-gray-400">Limited time offer - Register now to secure your spot!</p>
-                    </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Independence Day Offer</h3>
+                <p className="text-gray-600 dark:text-gray-400">Independence Day special offer - Register now to secure your spot!</p>
+              </div>
 
               <div className="grid md:grid-cols-2 gap-6 mb-8 text-left">
                 <div className="space-y-3">
@@ -804,17 +824,17 @@ export default function HomePage() {
                   <div className="flex items-center space-x-3">
                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                     <span className="text-gray-700 dark:text-gray-300">Welcome Kit</span>
-            </div>
+                  </div>
                   <div className="flex items-center space-x-3">
                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                     <span className="text-gray-700 dark:text-gray-300">All Meals Included</span>
-                    </div>
                   </div>
+                </div>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                     <span className="text-gray-700 dark:text-gray-300">Conference Certificate</span>
-                    </div>
+                  </div>
                   <div className="flex items-center space-x-3">
                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                     <span className="text-gray-700 dark:text-gray-300">CME Credits</span>
@@ -822,23 +842,23 @@ export default function HomePage() {
                   <div className="flex items-center space-x-3">
                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                     <span className="text-gray-700 dark:text-gray-300">Networking Sessions</span>
-                      </div>
-                </div>
                   </div>
-                  
+                </div>
+              </div>
+
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link href="/register">
                   <button className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-lg rounded-xl transition-all duration-300 shadow-lg hover:shadow-orange-200/50 dark:hover:shadow-orange-900/50">
                     Register Now - ₹5,000
                   </button>
                 </Link>
-          </motion.div>
+              </motion.div>
 
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-4 text-center">
-                *Early bird pricing available for limited time. Standard pricing will be announced later.
+                *Independence Day offer now live! Early Bird registration starts from August 16.
               </p>
-                </motion.div>
-            </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -869,7 +889,7 @@ export default function HomePage() {
               <Link href="/register">
                 <Button className="px-12 py-6 text-xl bg-white text-orange-600 hover:bg-gray-100 rounded-full shadow-2xl font-bold">
                   <Sparkles className="mr-3 h-6 w-6" />
-                  Secure Your Future
+                  Register Now
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
               </Link>
@@ -881,7 +901,7 @@ export default function HomePage() {
                   variant="outline"
                   className="px-12 py-6 text-xl border-2 border-white text-white bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm font-bold shadow-lg"
                 >
-                  Submit Innovation
+                  Submit Abstract
                 </Button>
               </Link>
             </motion.div>
@@ -899,29 +919,29 @@ export default function HomePage() {
               <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
                 {/* Neurotrauma Society of India */}
                 <div className="flex flex-col items-center space-y-4">
-                  <img 
-                    src="/NTSILOGO.png" 
-                    alt="Neurotrauma Society of India" 
+                  <img
+                    src="/NTSILOGO.png"
+                    alt="Neurotrauma Society of India"
                     className="h-20 w-auto object-contain"
                   />
                   <p className="text-gray-300 text-center font-medium">Neurotrauma Society of India</p>
                 </div>
-                
+
                 {/* Brain and Spine Society */}
                 <div className="flex flex-col items-center space-y-4">
-                  <img 
-                    src="/brainandspinesociety.png" 
-                    alt="Brain and Spine Society" 
+                  <img
+                    src="/brainandspinesociety.png"
+                    alt="Brain and Spine Society(BASS)"
                     className="h-20 w-auto object-contain"
                   />
-                  <p className="text-gray-300 text-center font-medium">Brain and Spine Society</p>
+                  <p className="text-gray-300 text-center font-medium">Brain and Spine Society(BASS)</p>
                 </div>
-                
+
                 {/* KIMS Hospitals */}
                 <div className="flex flex-col items-center space-y-4">
-                  <img 
-                    src="/KIMS.png" 
-                    alt="KIMS Hospitals" 
+                  <img
+                    src="/KIMS.png"
+                    alt="KIMS Hospitals"
                     className="h-20 w-auto object-contain"
                   />
                   <p className="text-gray-300 text-center font-medium">KIMS Hospitals</p>
@@ -931,14 +951,14 @@ export default function HomePage() {
           </div>
 
           {/* Main Footer Content */}
-          <div className="grid md:grid-cols-5 gap-8 mb-16">
+          <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-8 mb-16">
             {/* Conference Info */}
-            <div>
-              <h3 className="text-4xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent leading-tight py-2">
+            <div className="md:col-span-2 lg:col-span-1">
+              <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent leading-tight py-2">
                 NEUROTRAUMA 2026
               </h3>
               <p className="text-gray-300 leading-relaxed mb-6">
-                Advancing Neurotrauma Care & Research through innovation, collaboration, and excellence. Join us in Hyderabad for three transformative days of medical learning.
+                Science, Sports & Spiritually through innovation, collaboration, and excellence. Join us in Hyderabad for three transformative days of medical learning.
               </p>
               <div className="space-y-2 text-gray-400">
                 <p className="flex items-center">
@@ -962,7 +982,7 @@ export default function HomePage() {
               <ul className="space-y-3 text-gray-300">
                 {[
                   "About Conference",
-                  "Scientific Program", 
+                  "Scientific Program",
                   "Registration",
                   "Abstracts",
                   "Venue Information",
@@ -981,7 +1001,7 @@ export default function HomePage() {
             {/* Contact Information */}
             <div>
               <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Contact Information</h4>
-              
+
               <div className="mb-6">
                 <h5 className="font-semibold text-white mb-2">Conference Secretariat</h5>
                 <p className="text-gray-300 text-sm">Dr. Raghavendra H</p>
@@ -1009,21 +1029,21 @@ export default function HomePage() {
             {/* Conference Manager */}
             <div>
               <h4 className="font-bold mb-6 text-orange-400 uppercase tracking-wide">Conference Manager</h4>
-              
+
               <div className="mb-6">
                 <h5 className="font-semibold text-white mb-2">Mr. Kiran Kumar Lella</h5>
                 <p className="text-gray-400 text-sm mb-2">Conference Manager</p>
                 <p className="text-gray-300 text-sm mb-1">Mobile: +91 – 9676541985</p>
                 <p className="text-gray-300 text-sm mb-4">Email: kiran@cmchyd.com</p>
-                
+
                 {/* CMC Logo under Conference Manager */}
-                 <div className="flex items-center mt-4">
-                   <img 
-                     src="/CMC Logo Footer.png" 
-                     alt="CMC Logo" 
-                     className="h-36 w-auto object-contain"
-                   />
-                 </div>
+                <div className="flex items-center mt-4">
+                  <img
+                    src="/CMC Logo Footer.png"
+                    alt="CMC Logo"
+                    className="h-36 w-auto object-contain"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1045,9 +1065,9 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                     title={social.label}
                   >
-                    <img 
-                      src={social.logo} 
-                      alt={social.label} 
+                    <img
+                      src={social.logo}
+                      alt={social.label}
                       className="w-6 h-6 object-contain"
                     />
                   </motion.div>
@@ -1094,13 +1114,13 @@ export default function HomePage() {
               {selectedLocation?.description}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedLocation && (
             <div className="space-y-6">
               {/* Location Image */}
               <div className="w-full h-64 rounded-lg overflow-hidden">
-                <img 
-                  src={selectedLocation.image} 
+                <img
+                  src={selectedLocation.image}
                   alt={selectedLocation.name}
                   className="w-full h-full object-cover"
                 />
@@ -1115,7 +1135,7 @@ export default function HomePage() {
                       {selectedLocation.category}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Visit Duration</h3>
                     <div className="flex items-center text-gray-600 dark:text-gray-400">
@@ -1156,15 +1176,15 @@ export default function HomePage() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Button 
+                <Button
                   onClick={() => handleGetDirections(selectedLocation.name)}
                   className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   <NavigationIcon className="w-4 h-4 mr-2" />
                   Get Directions
                 </Button>
-                
-                <Button 
+
+                <Button
                   onClick={() => {
                     const searchQuery = encodeURIComponent(`${selectedLocation.name} Hyderabad tourism`)
                     window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank')

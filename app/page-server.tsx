@@ -36,8 +36,8 @@ const organizers = [
   },
   {
     src: "/brainandspinesociety.png",
-    alt: "Brain and Spine Society",
-    name: "Brain and Spine Society"
+    alt: "Brain and Spine Society(BASS)",
+    name: "Brain and Spine Society(BASS)"
   },
   {
     src: "/KIMS.png",
@@ -193,7 +193,7 @@ export default function HomePage() {
                   <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 font-light leading-relaxed">
                     Annual Conference of Neurotrauma Society of India
                     <br />
-                    <span className="text-lg text-orange-600">Advancing Neurotrauma Care & Research</span>
+                    <span className="text-lg text-orange-600">Science, Sports & Spiritually</span>
                   </p>
                 </div>
 

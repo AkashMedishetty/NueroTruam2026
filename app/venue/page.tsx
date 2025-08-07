@@ -116,7 +116,7 @@ export default function VenuePage() {
           </div>
         </section>
 
-        {/* Venue Features Preview */}
+        {/* COMMENTED OUT - What to Expect Section
         <section className="py-16">
           <div className="container mx-auto px-6">
             <motion.div
@@ -195,6 +195,7 @@ export default function VenuePage() {
             </div>
           </div>
         </section>
+        */}
 
         {/* COMMENTED OUT - Detailed Venue Information 
         <section className="py-8 lg:py-16 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-800 dark:to-gray-700">

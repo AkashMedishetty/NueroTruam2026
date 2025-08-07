@@ -273,11 +273,12 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
         
-        {/* Service Worker Registration */}
+        {/* Service Worker Registration - Disabled in development to prevent auth issues */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
+              // Only register Service Worker in production
+              if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js')
                     .then(function(registration) {
@@ -286,6 +287,20 @@ export default function RootLayout({
                     .catch(function(registrationError) {
                       console.log('SW registration failed: ', registrationError);
                     });
+                });
+              } else if ('serviceWorker' in navigator && location.hostname === 'localhost') {
+                // Aggressively clear any existing Service Workers in development
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('Cleared Service Worker in development');
+                  }
+                  // Force reload after clearing to ensure clean state
+                  if (registrations.length > 0) {
+                    setTimeout(function() {
+                      window.location.reload();
+                    }, 100);
+                  }
                 });
               }
             `,
@@ -307,7 +322,7 @@ export default function RootLayout({
                   <Toaster />
                   <Analytics />
                   <PWAInstallPrompt />
-                  <ServiceWorkerUpdate />
+                  {process.env.NODE_ENV === 'production' && <ServiceWorkerUpdate />}
                   <RedirectLoopHandler />
 
               {/* Background particles - Fixed positions to prevent memory leaks */}

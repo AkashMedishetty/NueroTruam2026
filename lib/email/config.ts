@@ -10,6 +10,14 @@ export const emailTemplateConfig = {
       enabled: true,
       subject: "Payment Confirmation - NeuroTrauma 2026"
     },
+    paymentReminder: {
+      enabled: true,
+      subject: "Payment Reminder - NeuroTrauma 2026"
+    },
+    customMessage: {
+      enabled: true,
+      subject: "Message from NeuroTrauma 2026 Team"
+    },
     test: {
       enabled: true, 
       subject: "Test Email - NeuroTrauma 2026"

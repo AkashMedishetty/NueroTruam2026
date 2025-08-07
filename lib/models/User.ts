@@ -35,6 +35,10 @@ export interface IUser extends Document {
     }>
     registrationDate: Date
     paymentDate?: Date
+    paymentType?: 'regular' | 'complementary' | 'sponsored'
+    sponsorName?: string
+    sponsorCategory?: string
+    paymentRemarks?: string
   }
   activeSessions: Array<{
     sessionId: string
@@ -136,7 +140,18 @@ const UserSchema = new Schema<IUser>({
       type: Date,
       default: Date.now
     },
-    paymentDate: Date
+    paymentDate: Date,
+    paymentType: {
+      type: String,
+      enum: ['regular', 'complementary', 'sponsored'],
+      default: 'regular'
+    },
+    sponsorName: String,
+    sponsorCategory: {
+      type: String,
+      enum: ['platinum', 'gold', 'silver', 'bronze', 'exhibitor', 'other']
+    },
+    paymentRemarks: String
   },
   activeSessions: [{
     sessionId: {

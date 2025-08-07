@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PricingTiersManager } from "./PricingTiersManager"
 import { WorkshopManager } from "./WorkshopManager"
 import { ContactMessagesManager } from "./ContactMessagesManager"
+import { RegistrationTable } from "./RegistrationTable"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,13 +16,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table"
 import {
   DropdownMenu,
@@ -64,7 +65,10 @@ import {
   UserCheck,
   Receipt,
   Bell,
-  MessageCircle
+  MessageCircle,
+  Upload,
+  Plus,
+  Gift
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -97,6 +101,11 @@ interface Registration {
     workshopSelections: string[]
     accompanyingPersons: any[]
     registrationDate: string
+    paymentDate?: string
+    paymentType?: 'regular' | 'complementary' | 'sponsored'
+    sponsorName?: string
+    sponsorCategory?: string
+    paymentRemarks?: string
   }
   createdAt: string
 }
@@ -129,7 +138,12 @@ export function ComprehensiveAdminPanel() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [error, setError] = useState<string | null>(null)
   const [currentTier, setCurrentTier] = useState<any>(null)
-  
+
+  // Handle registrations tab click to redirect to external URL
+  const handleRegistrationsTabClick = () => {
+    window.open('http://localhost:3001/admin/registrations', '_blank')
+  }
+
   // Dashboard data
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalRegistrations: 0,
@@ -142,18 +156,19 @@ export function ComprehensiveAdminPanel() {
     dailyRegistrations: [],
     paymentsByMethod: {}
   })
-  
+
   // Registrations data
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [filteredRegistrations, setFilteredRegistrations] = useState<Registration[]>([])
-  
+
   // Payments data
   const [payments, setPayments] = useState<Payment[]>([])
-  
+
   // Search and filters
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
+
   // Bulk email states
   const [emailSubject, setEmailSubject] = useState("")
   const [emailContent, setEmailContent] = useState("")
@@ -163,6 +178,18 @@ export function ComprehensiveAdminPanel() {
   const [filteredRecipients, setFilteredRecipients] = useState<any[]>([])
   const [isLoadingRecipients, setIsLoadingRecipients] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
+
+  // Dialog states
+  const [isAddRegistrationOpen, setIsAddRegistrationOpen] = useState(false)
+  const [isImportOpen, setIsImportOpen] = useState(false)
+  const [isSpecialPaymentOpen, setIsSpecialPaymentOpen] = useState(false)
+  const [selectedRegistrationForPayment, setSelectedRegistrationForPayment] = useState<Registration | null>(null)
+  const [specialPaymentData, setSpecialPaymentData] = useState({
+    paymentType: 'complementary' as 'complementary' | 'sponsored',
+    sponsorName: '',
+    sponsorCategory: 'platinum' as 'platinum' | 'gold' | 'silver' | 'bronze' | 'exhibitor' | 'other',
+    paymentRemarks: ''
+  })
 
   useEffect(() => {
     fetchDashboardData()
@@ -188,7 +215,7 @@ export function ComprehensiveAdminPanel() {
     let filtered = registrations
 
     if (searchTerm) {
-      filtered = filtered.filter(reg => 
+      filtered = filtered.filter(reg =>
         reg.profile.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reg.profile.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -214,20 +241,20 @@ export function ComprehensiveAdminPanel() {
 
         // Filter by registration type
         if (!selectedTypes.includes('all')) {
-          recipients = recipients.filter((r: any) => 
+          recipients = recipients.filter((r: any) =>
             selectedTypes.includes(r.registrationType)
           )
         }
 
         // Filter by payment status
         if (!selectedStatuses.includes('all')) {
-          recipients = recipients.filter((r: any) => 
+          recipients = recipients.filter((r: any) =>
             selectedStatuses.includes(r.registrationStatus)
           )
         }
 
         setFilteredRecipients(recipients)
-        
+
         toast({
           title: "Recipients Loaded",
           description: `Found ${recipients.length} matching recipients`
@@ -259,7 +286,7 @@ export function ComprehensiveAdminPanel() {
     setIsSendingEmail(true)
     try {
       const recipients = filteredRecipients.map(r => r.email)
-      
+
       const response = await fetch('/api/admin/bulk-email', {
         method: 'POST',
         headers: {
@@ -279,7 +306,7 @@ export function ComprehensiveAdminPanel() {
           title: "Email Sent Successfully",
           description: `Bulk email sent to ${recipients.length} recipients`
         })
-        
+
         // Reset form
         setEmailSubject("")
         setEmailContent("")
@@ -356,7 +383,7 @@ export function ComprehensiveAdminPanel() {
     } catch (error) {
       console.error('Error fetching admin data:', error)
       setError(error instanceof Error ? error.message : 'Unknown error occurred')
-      
+
       // Set default values on error
       setDashboardStats({
         totalRegistrations: 0,
@@ -372,7 +399,7 @@ export function ComprehensiveAdminPanel() {
       setRegistrations([])
       setFilteredRegistrations([])
       setPayments([])
-      
+
       toast({
         title: "Error",
         description: "Failed to load admin data. Using default values.",
@@ -396,7 +423,7 @@ export function ComprehensiveAdminPanel() {
         a.click()
         document.body.removeChild(a)
         window.URL.revokeObjectURL(url)
-        
+
         toast({
           title: "Export Successful",
           description: "Registrations data exported successfully"
@@ -424,7 +451,7 @@ export function ComprehensiveAdminPanel() {
         a.click()
         document.body.removeChild(a)
         window.URL.revokeObjectURL(url)
-        
+
         toast({
           title: "Export Successful",
           description: "Payments data exported successfully"
@@ -434,6 +461,105 @@ export function ComprehensiveAdminPanel() {
       toast({
         title: "Export Failed",
         description: "Failed to export payments data",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleEditRegistration = (registration: Registration) => {
+    // For now, redirect to the dedicated registrations page
+    window.open(`/admin/registrations?edit=${registration._id}`, '_blank')
+  }
+
+  const handleSendEmail = async (registration: Registration) => {
+    try {
+      const response = await fetch(`/api/admin/registrations/${registration._id}/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          type: 'general',
+          subject: 'NeuroTrauma 2026 - Registration Update',
+          message: 'Thank you for registering for NeuroTrauma 2026 Conference.'
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Email Sent",
+          description: "Email has been sent successfully to the participant."
+        })
+      } else {
+        toast({
+          title: "Email Failed",
+          description: data.message || "Failed to send email",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error("Send email error:", error)
+      toast({
+        title: "Error",
+        description: "An error occurred while sending email",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleMarkAsSpecial = (registration: Registration) => {
+    setSelectedRegistrationForPayment(registration)
+    setSpecialPaymentData({
+      paymentType: 'complementary',
+      sponsorName: '',
+      sponsorCategory: 'platinum',
+      paymentRemarks: ''
+    })
+    setIsSpecialPaymentOpen(true)
+  }
+
+  const handleSaveSpecialPayment = async () => {
+    if (!selectedRegistrationForPayment) return
+
+    try {
+      const response = await fetch(`/api/admin/registrations/${selectedRegistrationForPayment._id}/special-payment`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          paymentType: specialPaymentData.paymentType,
+          sponsorName: specialPaymentData.sponsorName,
+          sponsorCategory: specialPaymentData.sponsorCategory,
+          paymentRemarks: specialPaymentData.paymentRemarks,
+          status: 'paid' // Mark as paid when setting special payment
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Payment Updated",
+          description: `Registration marked as ${specialPaymentData.paymentType} successfully.`
+        })
+        setIsSpecialPaymentOpen(false)
+        setSelectedRegistrationForPayment(null)
+        fetchDashboardData() // Refresh data
+      } else {
+        toast({
+          title: "Update Failed",
+          description: data.message || "Failed to update payment status",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error("Special payment update error:", error)
+      toast({
+        title: "Error",
+        description: "An error occurred while updating payment status",
         variant: "destructive"
       })
     }
@@ -458,13 +584,13 @@ export function ComprehensiveAdminPanel() {
           <AlertDescription>
             <strong>Error loading admin panel:</strong> {error}
             <br />
-            <Button 
+            <Button
               onClick={() => {
                 setError(null)
                 fetchDashboardData()
-              }} 
-              variant="outline" 
-              size="sm" 
+              }}
+              variant="outline"
+              size="sm"
               className="mt-2"
             >
               Try Again
@@ -497,12 +623,19 @@ export function ComprehensiveAdminPanel() {
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
-          <TabsTrigger value="registrations" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="registrations" 
+            className="flex items-center gap-2"
+            onClick={(e) => {
+              e.preventDefault()
+              handleRegistrationsTabClick()
+            }}
+          >
             <Users className="h-4 w-4" />
             Registrations
           </TabsTrigger>
@@ -554,7 +687,7 @@ export function ComprehensiveAdminPanel() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -566,7 +699,7 @@ export function ComprehensiveAdminPanel() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -578,7 +711,7 @@ export function ComprehensiveAdminPanel() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -642,110 +775,13 @@ export function ComprehensiveAdminPanel() {
 
         {/* Registrations Tab */}
         <TabsContent value="registrations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registration Management</CardTitle>
-              <CardDescription>View and manage all conference registrations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search by name, email, or registration ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleExportRegistrations}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Registration ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRegistrations.map((registration) => (
-                      <TableRow key={registration._id}>
-                        <TableCell className="font-mono text-sm">
-                          {registration.registrationId}
-                        </TableCell>
-                        <TableCell>
-                          {registration.profile.title} {registration.profile.firstName} {registration.profile.lastName}
-                        </TableCell>
-                        <TableCell>{registration.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="capitalize">
-                            {registration.registration.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={registration.registration.status === 'paid' ? 'default' : 'secondary'}
-                          >
-                            {registration.registration.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(registration.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Registration
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Mail className="mr-2 h-4 w-4" />
-                                Send Email
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
-                                Cancel Registration
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <RegistrationTable
+            searchTerm={searchTerm}
+            statusFilter={statusFilter}
+            typeFilter="all"
+            paymentTypeFilter={paymentTypeFilter}
+            onSelectionChange={() => {}}
+          />
         </TabsContent>
 
         {/* Payments Tab */}
@@ -782,7 +818,7 @@ export function ComprehensiveAdminPanel() {
                           {payment.userDetails?.registrationType?.replace('-', ' ') || 'N/A'}
                         </TableCell>
                         <TableCell>
-                          <Badge 
+                          <Badge
                             variant={payment.status === 'completed' ? 'default' : 'secondary'}
                           >
                             {payment.status}
@@ -857,7 +893,7 @@ export function ComprehensiveAdminPanel() {
               <li><strong>Email Settings</strong> - Use the "Emails" tab for SMTP configuration</li>
             </ul>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Quick Links */}
             <Card>
@@ -866,24 +902,24 @@ export function ComprehensiveAdminPanel() {
                 <CardDescription>Navigate to specific configuration sections</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
                   onClick={() => setActiveTab('pricing')}
                 >
                   <DollarSign className="mr-2 h-4 w-4" />
                   Manage Pricing Tiers & Special Offers
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
                   onClick={() => setActiveTab('workshops')}
                 >
                   <Calendar className="mr-2 h-4 w-4" />
                   Manage Workshops & Seat Availability
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
                   onClick={() => setActiveTab('emails')}
                 >
@@ -917,7 +953,7 @@ export function ComprehensiveAdminPanel() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">Total Workshops</p>
@@ -928,7 +964,7 @@ export function ComprehensiveAdminPanel() {
                       <Badge variant="secondary" className="mt-1">Active</Badge>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">Registration Categories</p>
@@ -943,7 +979,7 @@ export function ComprehensiveAdminPanel() {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Email Configuration */}
           <Card>
             <CardHeader>
@@ -973,7 +1009,7 @@ export function ComprehensiveAdminPanel() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium">Email Templates</h4>
                   <div className="space-y-3">
@@ -996,7 +1032,7 @@ export function ComprehensiveAdminPanel() {
                   </div>
                 </div>
               </div>
-              
+
               <Button className="w-full mt-4">
                 <Settings className="mr-2 h-4 w-4" />
                 Update Email Configuration
@@ -1017,7 +1053,7 @@ export function ComprehensiveAdminPanel() {
                 {/* Email Composition */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Compose Email</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="emailSubject">Subject</Label>
@@ -1028,7 +1064,7 @@ export function ComprehensiveAdminPanel() {
                         placeholder="Enter email subject"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="senderName">Sender Name</Label>
                       <Input
@@ -1038,7 +1074,7 @@ export function ComprehensiveAdminPanel() {
                         placeholder="NeuroTrauma 2026 Team"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="emailContent">Message</Label>
                       <Textarea
@@ -1055,7 +1091,7 @@ export function ComprehensiveAdminPanel() {
                 {/* Recipient Selection */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Select Recipients</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <Label>Filter by Registration Type</Label>
@@ -1209,7 +1245,7 @@ export function ComprehensiveAdminPanel() {
                     <span className="font-medium">{dashboardStats.accompanyingPersons}</span>
                   </div>
                 </div>
-                <Button 
+                <Button
                   onClick={handleExportRegistrations}
                   className="w-full"
                   size="sm"
@@ -1239,7 +1275,7 @@ export function ComprehensiveAdminPanel() {
                   <div className="flex justify-between">
                     <span className="text-sm">Avg. per Registration</span>
                     <span className="font-medium">
-                      ₹{dashboardStats.totalRegistrations > 0 
+                      ₹{dashboardStats.totalRegistrations > 0
                         ? Math.round(dashboardStats.totalRevenue / dashboardStats.totalRegistrations).toLocaleString()
                         : '0'
                       }
@@ -1248,14 +1284,14 @@ export function ComprehensiveAdminPanel() {
                   <div className="flex justify-between">
                     <span className="text-sm">Payment Success Rate</span>
                     <span className="font-medium">
-                      {dashboardStats.totalRegistrations > 0 
+                      {dashboardStats.totalRegistrations > 0
                         ? Math.round((dashboardStats.paidRegistrations / dashboardStats.totalRegistrations) * 100)
                         : 0
                       }%
                     </span>
                   </div>
                 </div>
-                <Button 
+                <Button
                   onClick={handleExportPayments}
                   className="w-full"
                   size="sm"
@@ -1275,7 +1311,7 @@ export function ComprehensiveAdminPanel() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
+                <Button
                   onClick={() => setActiveTab("emails")}
                   className="w-full"
                   variant="outline"
@@ -1284,7 +1320,7 @@ export function ComprehensiveAdminPanel() {
                   <Mail className="mr-2 h-4 w-4" />
                   Send Bulk Email
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setActiveTab("config")}
                   className="w-full"
                   variant="outline"
@@ -1293,7 +1329,7 @@ export function ComprehensiveAdminPanel() {
                   <Settings className="mr-2 h-4 w-4" />
                   Manage Settings
                 </Button>
-                <Button 
+                <Button
                   onClick={fetchDashboardData}
                   className="w-full"
                   variant="outline"
@@ -1323,7 +1359,7 @@ export function ComprehensiveAdminPanel() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{count || 0}</span>
                       <span className="text-sm text-muted-foreground">
-                        ({dashboardStats.totalRegistrations > 0 
+                        ({dashboardStats.totalRegistrations > 0
                           ? Math.round(((count || 0) / dashboardStats.totalRegistrations) * 100)
                           : 0
                         }%)
@@ -1347,10 +1383,10 @@ export function ComprehensiveAdminPanel() {
                   <div key={day.date} className="flex items-center justify-between">
                     <span className="text-sm">{new Date(day.date).toLocaleDateString()}</span>
                     <div className="flex items-center gap-2">
-                      <div 
+                      <div
                         className="h-2 bg-blue-500 rounded"
-                        style={{ 
-                          width: `${Math.max(10, ((day.count || 0) / Math.max(...(dashboardStats.dailyRegistrations || []).map(d => d.count || 0), 1)) * 100)}px` 
+                        style={{
+                          width: `${Math.max(10, ((day.count || 0) / Math.max(...(dashboardStats.dailyRegistrations || []).map(d => d.count || 0), 1)) * 100)}px`
                         }}
                       ></div>
                       <span className="font-medium w-8 text-right">{day.count || 0}</span>
@@ -1383,7 +1419,7 @@ export function ComprehensiveAdminPanel() {
                 <p className="text-sm text-gray-400 mb-4">
                   For detailed notification management, visit the dedicated notifications page
                 </p>
-                <Button 
+                <Button
                   onClick={() => window.open('/admin/notifications', '_blank')}
                   className="bg-orange-600 hover:bg-orange-700"
                 >
@@ -1400,6 +1436,164 @@ export function ComprehensiveAdminPanel() {
           <ContactMessagesManager />
         </TabsContent>
       </Tabs>
+
+      {/* Add Registration Dialog */}
+      <Dialog open={isAddRegistrationOpen} onOpenChange={setIsAddRegistrationOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Registration</DialogTitle>
+            <DialogDescription>
+              Create a new registration manually
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Add Registration functionality
+              </p>
+              <p className="text-sm text-gray-400 mb-4">
+                For detailed registration management, visit the dedicated registrations page
+              </p>
+              <Button
+                onClick={() => window.open('/admin/registrations', '_blank')}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Open Registration Manager
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddRegistrationOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Registrations</DialogTitle>
+            <DialogDescription>
+              Upload a CSV file to import multiple registrations
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Import functionality
+              </p>
+              <p className="text-sm text-gray-400 mb-4">
+                For detailed import functionality, visit the dedicated registrations page
+              </p>
+              <Button
+                onClick={() => window.open('/admin/registrations', '_blank')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Open Registration Manager
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsImportOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Special Payment Dialog */}
+      <Dialog open={isSpecialPaymentOpen} onOpenChange={setIsSpecialPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark as Complementary/Sponsored</DialogTitle>
+            <DialogDescription>
+              Update payment status for {selectedRegistrationForPayment?.profile.firstName} {selectedRegistrationForPayment?.profile.lastName}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="payment-type">Payment Type</Label>
+              <Select
+                value={specialPaymentData.paymentType}
+                onValueChange={(value: 'complementary' | 'sponsored') =>
+                  setSpecialPaymentData({ ...specialPaymentData, paymentType: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="complementary">Complementary</SelectItem>
+                  <SelectItem value="sponsored">Sponsored</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {specialPaymentData.paymentType === 'sponsored' && (
+              <>
+                <div>
+                  <Label htmlFor="sponsor-name">Sponsor Name</Label>
+                  <Input
+                    id="sponsor-name"
+                    value={specialPaymentData.sponsorName}
+                    onChange={(e) => setSpecialPaymentData({ ...specialPaymentData, sponsorName: e.target.value })}
+                    placeholder="Enter sponsor name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sponsor-category">Sponsor Category</Label>
+                  <Select
+                    value={specialPaymentData.sponsorCategory}
+                    onValueChange={(value: 'platinum' | 'gold' | 'silver' | 'bronze' | 'exhibitor' | 'other') =>
+                      setSpecialPaymentData({ ...specialPaymentData, sponsorCategory: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="platinum">Platinum Sponsor</SelectItem>
+                      <SelectItem value="gold">Gold Sponsor</SelectItem>
+                      <SelectItem value="silver">Silver Sponsor</SelectItem>
+                      <SelectItem value="bronze">Bronze Sponsor</SelectItem>
+                      <SelectItem value="exhibitor">Exhibitor</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            <div>
+              <Label htmlFor="payment-remarks">Remarks</Label>
+              <Textarea
+                id="payment-remarks"
+                value={specialPaymentData.paymentRemarks}
+                onChange={(e) => setSpecialPaymentData({ ...specialPaymentData, paymentRemarks: e.target.value })}
+                placeholder="Additional remarks or notes"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSpecialPaymentOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSpecialPayment}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Update Payment Status
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

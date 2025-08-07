@@ -560,7 +560,7 @@ export function EnhancedUserDashboard() {
                     <Calendar className="h-8 w-8 text-orange-500" />
                     <div>
                       <p className="font-semibold">Dates</p>
-                      <p className="text-sm text-muted-foreground">March 15-17, 2026</p>
+                      <p className="text-sm text-muted-foreground">August 7-9, 2026</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

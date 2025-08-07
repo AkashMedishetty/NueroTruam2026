@@ -6,7 +6,6 @@ import { Navigation } from "@/components/navigation"
 import { Mail, Linkedin, Award, GraduationCap, Star, Sparkles, Users, Trophy } from "lucide-react"
 import Link from "next/link"
 
-
 const committeeMembers = [
   {
     id: 1,
@@ -14,7 +13,7 @@ const committeeMembers = [
     title: "Organising Chairman",
     // institution: "AIIMS Hyderabad",
     // specialty: "Brain & Spinal Injury Surgery",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/Dr. Manas P.jpg",
     bio: "Dr. Manas Panigrahi is a distinguished neurotrauma surgeon with extensive experience in brain and spinal injury treatment.",
     // achievements: ["Padma Shri Awardee", "500+ Research Papers", "AI Surgery Pioneer", "Global Innovation Leader"],
     email: "manas.panigrahi@hospital.edu",
@@ -27,7 +26,7 @@ const committeeMembers = [
     title: "Organising Secretary",
     // institution: "NIMS Hyderabad",
     // specialty: "Spine Surgery & Robotics",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/Dr. R H.jpg",
     bio: "Dr. Raghavendra H is an experienced neurosurgeon specializing in advanced neurotrauma care and surgical techniques.",
     // achievements: ["Robotics Pioneer", "300+ Publications", "Innovation Excellence", "Future Medicine Award"],
     email: "raghavendra.h@hospital.edu",
@@ -40,7 +39,7 @@ const committeeMembers = [
     title: "Treasurer",
     // institution: "Hyderabad Medical College",
     // specialty: "Sports Medicine & VR Therapy",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/Dr S P.jpg",
     bio: "Dr. Swetha P is a dedicated medical professional with expertise in neurotrauma management and administrative excellence.",
     // achievements: ["VR Therapy Creator", "Olympic Innovation", "Biometric Expert", "Future Sports Medicine"],
     email: "swetha.p@hospital.edu",
@@ -86,6 +85,26 @@ const committeeMembers = [
   //   color: "#e91e63",
   //   stats: { surgeries: "2000+", papers: "280+", awards: "16+" },
   // },
+]
+
+// New committee members from your list
+const additionalCommitteeMembers = [
+  "Dr. A K Purohit", "Dr. A Krishna Reddy", "Dr. Abhi Ramchandra G", "Dr. Alok Ranjan", 
+  "Dr. Ambresh A", "Dr. Amitava Ray", "Dr. Aneel Kumar P", "Dr. Anil Kumar", 
+  "Dr. B J Rajesh", "Dr. B S V Raju", "Dr. Bala Rajashekhar", "Dr. Chandrashekhar Naidu", 
+  "Dr. Dasardhi", "Dr. Devi", "Dr. G Prakash Rao", "Dr. G Venu gopal", 
+  "Dr. Gopala Krishna", "Dr. I Dinakar", "Dr. Jaleel Kirmani", "Dr. K V L Narasinga Rao", 
+  "Dr. K V R Sastry", "Dr. Kalyan Bommakanti", "Dr. Kaushal Ippili", "Dr. M A Jaleel", 
+  "Dr. Manik Prabhu", "Dr. Manohar Reddy", "Dr. Mastan Reddy", "Dr. N Pratap Kumar", 
+  "Dr. Naveen Mehrotra", "Dr. Pasham Amarendra", "Dr. Phaniraj G L", "Dr. R Nagaraju", 
+  "Dr. R T S Naik", "Dr. Raghu Samala", "Dr. Rahul Lath", "Dr. Rajesh Alugolu", 
+  "Dr. Rajesh Reddy", "Dr. Ram Kishan", "Dr. Rama Krishna Choudary", "Dr. Ramanadha Reddy K", 
+  "Dr. S Madan Reddy", "Dr. S Ramesh", "Dr. Sai Kalyan Savarapu", "Dr. Sandhya Kodali", 
+  "Dr. Savitr Sastri BV", "Dr. Sharan Basappa", "Dr. Sreedharala Srinivasa S", "Dr. Subodh Raju", 
+  "Dr. Suchanda Bhattacharjee", "Dr. Sujit Kumar Vidiyala", "Dr. Sukumar Sura", 
+  "Dr. Syed Ameer Basha Pasapala", "Dr. T Narasimha Rao", "Dr. T V R K Murthy", 
+  "Dr. T V Srinivas", "Dr. Thirumal Yerragunta", "Dr. Vamsi Krishna Kotha", 
+  "Dr. Vamsi Krishna Y", "Dr. Vasundhara S Rangan", "Dr. Vijayasaradhi M", "Dr. Vishaka Karpe Patil"
 ]
 
 export default function CommitteePage() {
@@ -147,7 +166,7 @@ export default function CommitteePage() {
           </div>
         </section>
 
-        {/* Committee Cards */}
+        {/* Key Committee Cards */}
         <section className="py-16 md:py-24 lg:py-32 relative">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-white dark:from-gray-800 dark:to-gray-900"></div>
 
@@ -159,10 +178,10 @@ export default function CommitteePage() {
               className="text-center mb-12 md:mb-16 lg:mb-20"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 lg:mb-8 bg-gradient-to-r from-gray-800 via-orange-600 to-red-600 bg-clip-text text-transparent dark:from-white dark:via-orange-400 dark:to-red-400 px-2">
-                Meet Our Expert Committee
+                Key Organizers
               </h2>
               <p className="text-base md:text-lg lg:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto px-4">
-                Each member brings decades of innovation and a vision for the future of medicine.
+                Leading the organization with vision and expertise.
               </p>
             </motion.div>
 
@@ -184,26 +203,14 @@ export default function CommitteePage() {
 
                   {/* Main Card */}
                   <div className="relative bg-white dark:bg-gray-800 backdrop-blur-xl border border-orange-100 dark:border-gray-700 rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden group-hover:border-orange-200 dark:group-hover:border-gray-600 transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-orange-100/20 dark:hover:shadow-gray-700/20">
-                    {/* Header with Avatar */}
-                    <div className="relative h-48 md:h-56 lg:h-64 overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600 opacity-90"></div>
+                    {/* Header with Member Image */}
+                    <div className="relative h-84 md:h-96 lg:h-102 overflow-hidden">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover object-center"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-
-                      {/* Floating Avatar */}
-                      <motion.div
-                        className="absolute bottom-3 md:bottom-4 left-4 md:left-6 w-16 h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full border-3 md:border-4 border-white/30 overflow-hidden"
-                        animate={{
-                          y: hoveredCard === member.id ? -5 : 0,
-                          scale: hoveredCard === member.id ? 1.1 : 1,
-                        }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="w-full h-full bg-gradient-to-br from-white/20 to-orange-100/30 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-white">
-                            {member.name.split(' ').map(n => n[0]).join('')}
-                          </span>
-                        </div>
-                      </motion.div>
 
                       {/* Stats Overlay */}
                       {/* <div className="absolute top-3 md:top-4 right-3 md:right-4 flex space-x-1 md:space-x-2">
@@ -222,7 +229,7 @@ export default function CommitteePage() {
                     </div>
 
                     {/* Content */}
-                    <div className="p-3 md:p-4 lg:p-8">
+                    <div className="p-3 md:p-4 lg:p-6">
                       <div className="mb-4 md:mb-6">
                         <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 group-hover:text-orange-600 transition-colors">
                           {member.name}
@@ -280,15 +287,6 @@ export default function CommitteePage() {
                           </div>
                         </div>
                       </motion.div>
-
-                      {/* Expand Button */}
-                      <motion.button
-                        className="w-full py-2 md:py-3 text-xs md:text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors border-t border-orange-100 dark:border-gray-600"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        {selectedMember === member.id ? "Show Less" : "Learn More"}
-                      </motion.button>
                     </div>
                   </div>
                 </motion.div>
@@ -297,8 +295,53 @@ export default function CommitteePage() {
           </div>
         </section>
 
+        {/* Additional Committee Members Grid */}
+        <section className="py-16 md:py-24 lg:py-32 relative bg-gradient-to-b from-white to-orange-50 dark:from-gray-800 dark:to-gray-900">
+          <div className="container mx-auto px-4 md:px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12 md:mb-16 lg:mb-20"
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 lg:mb-8 bg-gradient-to-r from-gray-800 via-orange-600 to-red-600 bg-clip-text text-transparent dark:from-white dark:via-orange-400 dark:to-red-400 px-2">
+                Committee Members
+              </h2>
+              <p className="text-base md:text-lg lg:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto px-4">
+                Distinguished medical professionals contributing their expertise and vision.
+              </p>
+            </motion.div>
+
+            {/* Glass Morphism Grid for Additional Members */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50 rounded-3xl"></div>
+              
+              <div className="relative bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border border-orange-100/50 dark:border-gray-700/50 rounded-3xl p-8 md:p-12 lg:p-16 shadow-xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                  {additionalCommitteeMembers.map((memberName, index) => (
+                    <motion.div
+                      key={index}
+                      className="relative group"
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.02 }}
+                      whileHover={{ y: -2, scale: 1.02 }}
+                    >
+                      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-orange-100/30 dark:border-gray-700/30 rounded-2xl p-4 md:p-5 text-center transition-all duration-300 group-hover:bg-orange-50/50 dark:group-hover:bg-gray-700/50 group-hover:border-orange-200/50 dark:group-hover:border-gray-600/50 group-hover:shadow-lg group-hover:shadow-orange-100/20 dark:group-hover:shadow-gray-700/20 cursor-pointer">
+                        <h3 className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight">
+                          {memberName}
+                        </h3>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Vision Statement */}
-        <section className="py-16 md:py-24 lg:py-32 relative overflow-hidden">
+        {/* <section className="py-16 md:py-24 lg:py-32 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-800 dark:to-gray-900"></div>
 
           <motion.div
@@ -337,7 +380,7 @@ export default function CommitteePage() {
               </motion.div>
             </div>
           </motion.div>
-        </section>
+        </section> */}
       </div>
     </div>
   )

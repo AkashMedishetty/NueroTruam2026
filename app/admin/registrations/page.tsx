@@ -23,6 +23,8 @@ export default function RegistrationsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
+  const [workshopFilter, setWorkshopFilter] = useState("all")
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
   const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -42,18 +44,40 @@ export default function RegistrationsPage() {
     console.log("Export registrations")
   }
 
+  const handleWorkshopExport = async () => {
+    try {
+      const response = await fetch(`/api/admin/export/workshop?workshop=${workshopFilter}&format=csv`)
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `workshop_${workshopFilter}_registrations_${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        console.error('Export failed')
+      }
+    } catch (error) {
+      console.error('Export error:', error)
+    }
+  }
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation />
         
-        <main className="container mx-auto px-4 py-8">
-          <div className="space-y-6">
+        <main className="container mx-auto px-4 py-4 md:py-8">
+          <div className="space-y-4 md:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold">Registration Management</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                <h1 className="text-2xl md:text-3xl font-bold">Registration Management</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 md:mt-2 text-sm md:text-base">
                   View and manage all conference registrations
                 </p>
               </div>
@@ -66,7 +90,7 @@ export default function RegistrationsPage() {
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -75,7 +99,7 @@ export default function RegistrationsPage() {
                   className="flex items-center gap-2"
                 >
                   <Download className="h-4 w-4" />
-                  Export All
+                  <span className="hidden sm:inline">Export All</span>
                 </Button>
               </div>
             </div>
@@ -92,8 +116,8 @@ export default function RegistrationsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                  <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                     <label className="text-sm font-medium">Search</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -114,8 +138,9 @@ export default function RegistrationsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
                         <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
@@ -129,17 +154,50 @@ export default function RegistrationsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="ntsi-member">NTSI Member</SelectItem>
+                        <SelectItem value="non-member">Non Member</SelectItem>
+                        <SelectItem value="pg-student">PG Student</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Workshop</label>
+                    <Select value={workshopFilter} onValueChange={setWorkshopFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filter by workshop" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Workshops</SelectItem>
+                        <SelectItem value="brain-surgery">Advanced Brain Surgery</SelectItem>
+                        <SelectItem value="spinal-injury">Spinal Cord Injury</SelectItem>
+                        <SelectItem value="pediatric-neurotrauma">Pediatric Neurotrauma</SelectItem>
+                        <SelectItem value="minimally-invasive">Minimally Invasive</SelectItem>
+                        <SelectItem value="neurotrauma-rehab">Neurotrauma Rehabilitation</SelectItem>
+                        <SelectItem value="emergency-neurosurgery">Emergency Neurosurgery</SelectItem>
+                        <SelectItem value="no-workshop">No Workshop Selected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Payment Type</label>
+                    <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filter by payment type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Payment Types</SelectItem>
                         <SelectItem value="regular">Regular</SelectItem>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="international">International</SelectItem>
-                        <SelectItem value="faculty">Faculty</SelectItem>
+                        <SelectItem value="complementary">Complementary</SelectItem>
+                        <SelectItem value="sponsored">Sponsored</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Actions</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {selectedRegistrations.length > 0 && (
                         <Button
                           size="sm"
@@ -147,7 +205,18 @@ export default function RegistrationsPage() {
                           className="flex items-center gap-1"
                         >
                           <Mail className="h-3 w-3" />
-                          Email ({selectedRegistrations.length})
+                          <span className="hidden sm:inline">Email</span> ({selectedRegistrations.length})
+                        </Button>
+                      )}
+                      {workshopFilter !== "all" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleWorkshopExport}
+                          className="flex items-center gap-1"
+                        >
+                          <Download className="h-3 w-3" />
+                          <span className="hidden sm:inline">Export Workshop</span>
                         </Button>
                       )}
                     </div>
@@ -157,12 +226,16 @@ export default function RegistrationsPage() {
             </Card>
 
             {/* Registration Table */}
-            <RegistrationTable
-              searchTerm={searchTerm}
-              statusFilter={statusFilter}
-              typeFilter={typeFilter}
-              onSelectionChange={setSelectedRegistrations}
-            />
+            <div className="space-y-4">
+              <RegistrationTable
+                searchTerm={searchTerm}
+                statusFilter={statusFilter}
+                typeFilter={typeFilter}
+                workshopFilter={workshopFilter}
+                paymentTypeFilter={paymentTypeFilter}
+                onSelectionChange={setSelectedRegistrations}
+              />
+            </div>
           </div>
         </main>
       </div>

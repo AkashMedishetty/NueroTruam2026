@@ -99,9 +99,9 @@ export function getBaseTemplate(content: string) {
         <div class="footer">
           <p>
             <strong>NeuroTrauma 2026</strong><br>
-            Hyderabad International Convention Center<br>
+            The Park Hotel, Somajiguda<br>
             Hyderabad, Telangana, India<br>
-            Email: info@neurotrauma2026.com | Phone: +91-40-12345678
+            Email: info@neurotrauma2026.com | Phone: +91-9676541985
           </p>
           <p>
             This is an automated email. Please do not reply to this email address.
@@ -255,6 +255,85 @@ export function getPasswordResetTemplate(resetData: {
     
     <p>Best regards,<br>
     <strong>NeuroTrauma 2026 Support Team</strong></p>
+  `
+  
+  return getBaseTemplate(content)
+}
+
+// Payment reminder email template
+export function getPaymentReminderTemplate(userData: {
+  name: string
+  registrationId: string
+  registrationType: string
+  email: string
+  daysOverdue?: number
+  amount?: number
+  currency?: string
+}) {
+  const content = `
+    <h2>Payment Reminder</h2>
+    <p>Dear ${userData.name},</p>
+    
+    <p>This is a friendly reminder regarding your registration payment for <strong>NeuroTrauma 2026</strong>.</p>
+    
+    <div class="highlight">
+      <h3>Your Registration Details:</h3>
+      <table>
+        <tr><th>Registration ID</th><td><strong>${userData.registrationId}</strong></td></tr>
+        <tr><th>Registration Type</th><td>${userData.registrationType}</td></tr>
+        <tr><th>Email</th><td>${userData.email}</td></tr>
+        ${userData.amount && userData.currency ? 
+          `<tr><th>Amount Due</th><td><strong>${userData.currency} ${userData.amount}</strong></td></tr>` : ''}
+        ${userData.daysOverdue ? 
+          `<tr><th>Days Overdue</th><td><span style="color: #dc2626;">${userData.daysOverdue} days</span></td></tr>` : ''}
+      </table>
+    </div>
+    
+    <p><strong>Payment Options:</strong></p>
+    <ul>
+      <li>Online payment through our secure portal</li>
+      <li>Bank transfer (details provided upon request)</li>
+      <li>Payment at the conference venue</li>
+    </ul>
+    
+    <p>Please complete your payment at your earliest convenience to secure your spot at the conference.</p>
+    
+    <p>If you have already made the payment, please ignore this reminder or contact us with your payment details.</p>
+    
+    <p><strong>Conference Details:</strong></p>
+    <ul>
+      <li><strong>Dates:</strong> August 7-9, 2026</li>
+      <li><strong>Venue:</strong> The Park Hotel, Somajiguda, Hyderabad</li>
+    </ul>
+    
+    <p>For any payment-related queries, please contact us at <a href="mailto:payments@neurotraumacon2026.com">payments@neurotraumacon2026.com</a></p>
+    
+    <p>Thank you for your understanding.</p>
+    
+    <p>Best regards,<br>
+    <strong>NeuroTrauma 2026 Finance Team</strong></p>
+  `
+  
+  return getBaseTemplate(content)
+}
+
+// Custom message template for admin communications
+export function getCustomMessageTemplate(messageData: {
+  subject: string
+  content: string
+  recipientName: string
+  senderName?: string
+}) {
+  const content = `
+    <h2>${messageData.subject}</h2>
+    <p>Dear ${messageData.recipientName},</p>
+    
+    <div style="margin: 20px 0; line-height: 1.6;">
+      ${messageData.content.replace(/\n/g, '<br>')}
+    </div>
+    
+    <p>Best regards,<br>
+    <strong>${messageData.senderName || 'NeuroTrauma 2026 Team'}</strong></p>
   `
   
   return getBaseTemplate(content)

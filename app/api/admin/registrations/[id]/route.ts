@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/mongodb'
-import User from '@/lib/models/User'
-import Payment from '@/lib/models/Payment'
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import  connectDB  from "@/lib/mongodb"
+import User from "@/lib/models/User"
 
 export async function PUT(
   request: NextRequest,
@@ -11,67 +10,75 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json({
-        success: false,
-        message: 'Unauthorized'
-      }, { status: 401 })
+    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
     await connectDB()
 
-    const adminUser = await User.findById(session.user.id)
-    if (!adminUser || adminUser.role !== 'admin') {
-      return NextResponse.json({
-        success: false,
-        message: 'Admin access required'
-      }, { status: 403 })
-    }
-
+    const { id } = params
     const body = await request.json()
-    const { adminRemarks, isComplimentary, isSponsored, sponsorName, status } = body
 
-    const updateData: any = {
-      adminRemarks,
-      isComplimentary: !!isComplimentary,
-      isSponsored: !!isSponsored,
-      sponsorName: isSponsored ? sponsorName : '',
+    // If it's just a status update
+    if (body.status && Object.keys(body).length === 1) {
+      const updateData: any = {
+        'registration.status': body.status
+      }
+
+      if (body.status === 'paid') {
+        updateData['registration.paymentDate'] = new Date().toISOString()
+      }
+
+      const user = await User.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true }
+      )
+
+      if (!user) {
+        return NextResponse.json(
+          { success: false, message: "Registration not found" },
+          { status: 404 }
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Status updated successfully",
+        data: user
+      })
     }
 
-    // If marking as complimentary or sponsored, update registration status and type
-    if (isComplimentary || isSponsored) {
-      updateData['registration.status'] = 'confirmed'
-      updateData['registration.type'] = isComplimentary ? 'complimentary' : 'sponsored'
-      updateData['registration.paymentStatus'] = isComplimentary ? 'complimentary' : 'sponsored'
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      params.id,
-      { $set: updateData },
+    // Full registration update
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $set: body },
       { new: true }
     )
 
-    if (!updatedUser) {
-      return NextResponse.json({
-        success: false,
-        message: 'Registration not found'
-      }, { status: 404 })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Registration not found" },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Registration updated successfully',
-      data: updatedUser
+      message: "Registration updated successfully",
+      data: user
     })
 
   } catch (error) {
-    console.error('Error updating registration:', error)
-    return NextResponse.json({
-      success: false,
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    console.error("Update registration error:", error)
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
 
@@ -81,50 +88,42 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json({
-        success: false,
-        message: 'Unauthorized'
-      }, { status: 401 })
+    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
     await connectDB()
 
-    const adminUser = await User.findById(session.user.id)
-    if (!adminUser || adminUser.role !== 'admin') {
-      return NextResponse.json({
-        success: false,
-        message: 'Admin access required'
-      }, { status: 403 })
+    const { id } = params
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $set: { 'registration.status': 'cancelled' } },
+      { new: true }
+    )
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Registration not found" },
+        { status: 404 }
+      )
     }
-
-    // Find the user to get their registration ID
-    const userToDelete = await User.findById(params.id)
-    if (!userToDelete) {
-      return NextResponse.json({
-        success: false,
-        message: 'Registration not found'
-      }, { status: 404 })
-    }
-
-    // Delete associated payments
-    await Payment.deleteMany({ userId: params.id })
-
-    // Delete the user registration
-    await User.findByIdAndDelete(params.id)
 
     return NextResponse.json({
       success: true,
-      message: 'Registration deleted successfully'
+      message: "Registration cancelled successfully",
+      data: user
     })
 
   } catch (error) {
-    console.error('Error deleting registration:', error)
-    return NextResponse.json({
-      success: false,
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    console.error("Cancel registration error:", error)
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
