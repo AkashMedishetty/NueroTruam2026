@@ -353,13 +353,20 @@ export default function RootLayout({
               if (typeof window !== 'undefined' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
                 const originalFetch = window.fetch;
                 window.fetch = function(input, init) {
-                  // Add cache busting parameter to requests
-                  if (typeof input === 'string' && !input.includes('cache_bust=')) {
-                    const separator = input.includes('?') ? '&' : '?';
-                    input = input + separator + 'cache_bust=' + Date.now();
+                  // Skip cache busting for GLB files, blob URLs, and data URLs to fix 3D models
+                  if (typeof input === 'string') {
+                    if (input.startsWith('blob:') || input.startsWith('data:') || input.endsWith('.glb') || input.includes('.glb?')) {
+                      return originalFetch(input, init);
+                    }
+                    
+                    // Add cache busting parameter to other requests
+                    if (!input.includes('cache_bust=')) {
+                      const separator = input.includes('?') ? '&' : '?';
+                      input = input + separator + 'cache_bust=' + Date.now();
+                    }
                   }
                   
-                  // Add no-cache headers
+                  // Add no-cache headers (but not for GLB files)
                   const headers = new Headers(init?.headers || {});
                   headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
                   headers.set('Pragma', 'no-cache');
