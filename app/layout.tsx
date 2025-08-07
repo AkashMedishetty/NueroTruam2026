@@ -337,7 +337,7 @@ export default function RootLayout({
               // Initialize Auto Cache Updater for production
               if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
                 // Dynamic import to avoid SSR issues
-                import('/lib/utils/auto-cache-updater').then(function(module) {
+                import('@/lib/utils/auto-cache-updater').then(function(module) {
                   const autoCacheUpdater = module.autoCacheUpdater;
                   autoCacheUpdater.initialize().then(function() {
                     console.log('🚀 Auto Cache Updater initialized');
