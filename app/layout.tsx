@@ -273,35 +273,102 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
         
-        {/* Service Worker Registration - Disabled in development to prevent auth issues */}
+        {/* Service Worker Registration with Force Update */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Only register Service Worker in production
-              if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
-                    });
-                });
-              } else if ('serviceWorker' in navigator && location.hostname === 'localhost') {
-                // Aggressively clear any existing Service Workers in development
+              // Enhanced Cache Management and Auto-Update System
+              if ('serviceWorker' in navigator) {
+                // Always clear existing service workers first
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  for(let registration of registrations) {
-                    registration.unregister();
-                    console.log('Cleared Service Worker in development');
+                  console.log('🔄 Found existing service workers:', registrations.length);
+                  
+                  // Unregister all existing service workers
+                  const unregisterPromises = registrations.map(function(registration) {
+                    console.log('🗑️ Unregistering SW:', registration.scope);
+                    return registration.unregister();
+                  });
+                  
+                  return Promise.all(unregisterPromises);
+                }).then(function() {
+                  console.log('✅ All existing service workers cleared');
+                  
+                  // Clear all caches
+                  if ('caches' in window) {
+                    return caches.keys().then(function(cacheNames) {
+                      console.log('🗑️ Clearing caches:', cacheNames);
+                      return Promise.all(
+                        cacheNames.map(function(cacheName) {
+                          return caches.delete(cacheName);
+                        })
+                      );
+                    });
                   }
-                  // Force reload after clearing to ensure clean state
-                  if (registrations.length > 0) {
-                    setTimeout(function() {
-                      window.location.reload();
-                    }, 100);
+                }).then(function() {
+                  console.log('✅ All caches cleared');
+                  
+                  // Only register new service worker in production
+                  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    console.log('🚀 Registering force-update service worker...');
+                    return navigator.serviceWorker.register('/sw-force-update.js?' + Date.now(), {
+                      scope: '/',
+                      updateViaCache: 'none'
+                    });
                   }
+                }).then(function(registration) {
+                  if (registration) {
+                    console.log('✅ Force-update SW registered:', registration.scope);
+                    
+                    // Force immediate activation
+                    if (registration.waiting) {
+                      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                    
+                    // Check for updates every 30 seconds
+                    setInterval(function() {
+                      registration.update();
+                    }, 30000);
+                  }
+                }).catch(function(error) {
+                  console.error('❌ Service worker registration failed:', error);
                 });
+              }
+              
+              // Initialize Auto Cache Updater for production
+              if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                // Dynamic import to avoid SSR issues
+                import('/lib/utils/auto-cache-updater').then(function(module) {
+                  const autoCacheUpdater = module.autoCacheUpdater;
+                  autoCacheUpdater.initialize().then(function() {
+                    console.log('🚀 Auto Cache Updater initialized');
+                  }).catch(function(error) {
+                    console.error('❌ Auto Cache Updater failed:', error);
+                  });
+                }).catch(function(error) {
+                  console.warn('⚠️ Could not load Auto Cache Updater:', error);
+                });
+              }
+              
+              // Add cache busting to all fetch requests (disabled for development to fix 3D models)
+              if (typeof window !== 'undefined' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                const originalFetch = window.fetch;
+                window.fetch = function(input, init) {
+                  // Add cache busting parameter to requests
+                  if (typeof input === 'string' && !input.includes('cache_bust=')) {
+                    const separator = input.includes('?') ? '&' : '?';
+                    input = input + separator + 'cache_bust=' + Date.now();
+                  }
+                  
+                  // Add no-cache headers
+                  const headers = new Headers(init?.headers || {});
+                  headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+                  headers.set('Pragma', 'no-cache');
+                  
+                  return originalFetch(input, {
+                    ...init,
+                    headers: headers
+                  });
+                };
               }
             `,
           }}

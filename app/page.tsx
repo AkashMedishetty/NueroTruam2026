@@ -536,10 +536,6 @@ export default function HomePage() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            onWheel={(e) => {
-              // Prevent this container from interfering with scroll
-              e.stopPropagation()
-            }}
           >
             {/* Scroll Indicators */}
             <div className="flex justify-center items-center space-x-4 mb-8">
@@ -553,51 +549,32 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Enhanced Horizontal Scrolling Container */}
+            {/* Optimized Horizontal Scrolling Container */}
             <div
-              className="overflow-x-auto overflow-y-hidden pb-8 snap-x snap-mandatory cursor-grab active:cursor-grabbing horizontal-scroll-container"
+              ref={(el) => {
+                if (el) {
+                  const handleWheel = (e: WheelEvent) => {
+                    // Only handle horizontal scrolling if shift is pressed or if we're on desktop
+                    if (e.shiftKey || window.innerWidth >= 768) {
+                      // Check if we can scroll horizontally
+                      const canScrollLeft = el.scrollLeft > 0;
+                      const canScrollRight = el.scrollLeft < (el.scrollWidth - el.clientWidth);
+                      
+                      if ((e.deltaY > 0 && canScrollRight) || (e.deltaY < 0 && canScrollLeft)) {
+                        e.preventDefault();
+                        el.scrollLeft += e.deltaY;
+                      }
+                    }
+                  };
+                  
+                  el.addEventListener('wheel', handleWheel, { passive: false });
+                  return () => el.removeEventListener('wheel', handleWheel);
+                }
+              }}
+              className="overflow-x-auto overflow-y-hidden pb-8 snap-x snap-mandatory scrollbar-hide horizontal-scroll-container"
               style={{
                 scrollBehavior: 'smooth',
                 WebkitOverflowScrolling: 'touch',
-              }}
-              onWheel={(e) => {
-                const container = e.currentTarget
-                const rect = container.getBoundingClientRect()
-                const mouseX = e.clientX - rect.left
-                const mouseY = e.clientY - rect.top
-
-                // Check if mouse is actually over the scrollable area
-                if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
-                  // Always prevent default when over the horizontal scroll area
-                  e.preventDefault()
-                  e.stopPropagation()
-
-                  // Scroll horizontally
-                  container.scrollLeft += e.deltaY * 2
-                }
-              }}
-              onMouseDown={(e) => {
-                const slider = e.currentTarget
-                let isDown = true
-                let startX = e.pageX - slider.offsetLeft
-                let scrollLeft = slider.scrollLeft
-
-                const handleMouseMove = (e: MouseEvent) => {
-                  if (!isDown) return
-                  e.preventDefault()
-                  const x = e.pageX - slider.offsetLeft
-                  const walk = (x - startX) * 2
-                  slider.scrollLeft = scrollLeft - walk
-                }
-
-                const handleMouseUp = () => {
-                  isDown = false
-                  document.removeEventListener('mousemove', handleMouseMove)
-                  document.removeEventListener('mouseup', handleMouseUp)
-                }
-
-                document.addEventListener('mousemove', handleMouseMove)
-                document.addEventListener('mouseup', handleMouseUp)
               }}
             >
               <div className="flex space-x-6 px-4" style={{ width: 'max-content' }}>
@@ -680,13 +657,9 @@ export default function HomePage() {
                     image: "/birlamandir.jpg"
                   }
                 ].map((place, index) => (
-                  <motion.div
+                  <div
                     key={index}
                     className="relative group w-80 h-[500px] flex-shrink-0 snap-center"
-                    initial={{ opacity: 0, x: 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1, duration: 0.5 }}
                   >
                     {/* Full Image Card with Simple Overlay */}
                     <div className="attraction-card relative w-full h-full rounded-3xl shadow-2xl overflow-hidden border border-white/20 transition-all duration-200 ease-out hover:shadow-orange-500/20">
@@ -753,7 +726,7 @@ export default function HomePage() {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -775,7 +748,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
             >
               <span className="text-orange-600 dark:text-orange-400 font-semibold text-sm uppercase tracking-wide">
-                🇮🇳 Independence Day Offer
+                Independence Day Offer
               </span>
             </motion.div>
 
@@ -1104,13 +1077,13 @@ export default function HomePage() {
 
       {/* Location Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-              <span className="text-2xl">{selectedLocation?.icon}</span>
-              {selectedLocation?.name}
+            <DialogTitle className="flex items-center gap-3 text-xl sm:text-2xl font-bold pr-8">
+              <span className="text-xl sm:text-2xl">{selectedLocation?.icon}</span>
+              <span className="line-clamp-2">{selectedLocation?.name}</span>
             </DialogTitle>
-            <DialogDescription className="text-lg text-gray-600 dark:text-gray-400">
+            <DialogDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
               {selectedLocation?.description}
             </DialogDescription>
           </DialogHeader>
@@ -1118,7 +1091,7 @@ export default function HomePage() {
           {selectedLocation && (
             <div className="space-y-6">
               {/* Location Image */}
-              <div className="w-full h-64 rounded-lg overflow-hidden">
+              <div className="w-full h-48 sm:h-64 rounded-lg overflow-hidden">
                 <img
                   src={selectedLocation.image}
                   alt={selectedLocation.name}
@@ -1127,7 +1100,7 @@ export default function HomePage() {
               </div>
 
               {/* Location Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Category</h3>
@@ -1175,10 +1148,10 @@ export default function HomePage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   onClick={() => handleGetDirections(selectedLocation.name)}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12"
                 >
                   <NavigationIcon className="w-4 h-4 mr-2" />
                   Get Directions
@@ -1190,10 +1163,18 @@ export default function HomePage() {
                     window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank')
                   }}
                   variant="outline"
-                  className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  className="w-full border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 h-12"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Learn More Online
+                </Button>
+
+                <Button
+                  onClick={() => setIsModalOpen(false)}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800 h-12 sm:hidden"
+                >
+                  Close
                 </Button>
               </div>
             </div>

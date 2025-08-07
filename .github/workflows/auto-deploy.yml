@@ -1,0 +1,193 @@
+name: Auto Deploy with Cache Invalidation
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - production
+  pull_request:
+    branches:
+      - main
+      - master
+      - production
+    types: [closed]
+
+env:
+  NODE_VERSION: '18'
+  DEPLOYMENT_ENVIRONMENT: production
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    
+    steps:
+      - name: 🚀 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📥 Install Dependencies
+        run: |
+          npm ci
+          npm audit fix --audit-level moderate
+          
+      - name: 🔍 Run Tests
+        run: |
+          npm run test:ci
+          npm run type-check
+          
+      - name: 🔄 Generate Cache Version
+        id: cache-version
+        run: |
+          npm run cache:generate
+          CACHE_VERSION=$(node -e "console.log('v' + Date.now() + '-' + '${{ github.sha }}'.substring(0,7))")
+          echo "version=$CACHE_VERSION" >> $GITHUB_OUTPUT
+          echo "Generated cache version: $CACHE_VERSION"
+        env:
+          GIT_BRANCH: ${{ github.ref_name }}
+          GIT_COMMIT: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          DEPLOYMENT_ID: ${{ github.run_id }}
+          
+      - name: 🏗️ Build Application
+        run: |
+          npm run build
+          
+      - name: 🚀 Execute Deployment Hook
+        run: |
+          node scripts/deployment-hook.js
+        env:
+          NODE_ENV: production
+          GIT_BRANCH: ${{ github.ref_name }}
+          GIT_COMMIT: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          DEPLOYMENT_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          
+      - name: 📊 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ steps.cache-version.outputs.version }}
+          path: |
+            .next/
+            public/cache-manifest.json
+            public/deployment-manifest.json
+            public/sw-force-update.js
+          retention-days: 30
+          
+      - name: 🔍 Verify Deployment Files
+        run: |
+          echo "Verifying deployment files..."
+          ls -la public/
+          
+          if [ -f "public/cache-manifest.json" ]; then
+            echo "✅ Cache manifest exists"
+            cat public/cache-manifest.json
+          else
+            echo "❌ Cache manifest missing"
+            exit 1
+          fi
+          
+          if [ -f "public/deployment-manifest.json" ]; then
+            echo "✅ Deployment manifest exists"
+            cat public/deployment-manifest.json
+          else
+            echo "❌ Deployment manifest missing"
+            exit 1
+          fi
+          
+          if [ -f "public/sw-force-update.js" ]; then
+            echo "✅ Service worker exists"
+            head -10 public/sw-force-update.js
+          else
+            echo "❌ Service worker missing"
+            exit 1
+          fi
+          
+      - name: 🌐 Deploy to Production Server
+        if: success()
+        run: |
+          echo "Deploying to production server..."
+          # Add your deployment commands here
+          # Examples:
+          # - Deploy to Vercel: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+          # - Deploy to Netlify: npx netlify deploy --prod --auth ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          # - Deploy to AWS: aws s3 sync .next/ s3://your-bucket/
+          # - Deploy via SSH: rsync -avz .next/ user@server:/path/to/app/
+          
+          echo "🚀 Production deployment completed!"
+          echo "📦 Cache Version: ${{ steps.cache-version.outputs.version }}"
+          echo "🔄 Users will automatically receive updates"
+          
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up temporary files..."
+          # Clean up any temporary files if needed
+          
+      - name: 📝 Create Release
+        if: success() && github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.cache-version.outputs.version }}
+          release_name: Release ${{ steps.cache-version.outputs.version }}
+          body: |
+            🚀 **Automated Production Deployment**
+            
+            **Changes:**
+            - Auto-generated cache version: `${{ steps.cache-version.outputs.version }}`
+            - Automatic cache invalidation enabled
+            - Service worker force-update implemented
+            
+            **Technical Details:**
+            - Branch: `${{ github.ref_name }}`
+            - Commit: `${{ github.sha }}`
+            - Build: #${{ github.run_number }}
+            - Deployment ID: ${{ github.run_id }}
+            
+            **User Impact:**
+            - ✅ Users will automatically receive the latest version
+            - ✅ No manual refresh required
+            - ✅ Progressive cache invalidation
+            
+            **Deployment Time:** ${{ steps.date.outputs.date }}
+          draft: false
+          prerelease: false
+          
+  notify-completion:
+    name: Notify Deployment Completion
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    
+    steps:
+      - name: 📅 Get Current Date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+        
+      - name: ✅ Success Notification
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "🔄 Cache invalidation active"
+          echo "📱 Users will receive updates automatically"
+          
+      - name: ❌ Failure Notification
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          echo "🔍 Check the logs for details"
+          echo "🚨 Manual intervention may be required"
